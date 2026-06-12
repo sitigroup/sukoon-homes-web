@@ -133,4 +133,69 @@ Area `baldev-nagar` (id 67): `seo_title` = "Rent in Baldev Nagar Barmer | Sukoon
 
 ---
 
-*Next: **TASK A4 — Property JSON-LD + SSR content** (pause for human review after)*
+## TASK A4 — Property JSON-LD + SSR content
+
+**Status:** ✅ COMPLETE — **⏸ PAUSE** (human review required before Phase B)
+
+### What changed
+
+1. **`src/utils/jsonld.js`** — `realEstateListing()`, `propertyBreadcrumbList()`, `searchBreadcrumbList()`, `mergeStructuredData()`.
+2. **`pages/property-details/[slug]/index.jsx`** — removed `dynamic(..., { ssr: false })`; static import; GSSP fetches full property + builds JSON-LD; passes `initialPropertyLoad` for SSR body.
+3. **`PropertyDetailPage.jsx` / `PropertyDetailsSwitcher.jsx`** — removed inner `ssr: false`; thread `initialPropertyLoad`.
+4. **`CustomPropertyDetailsPage.jsx` / `PropertyDetails.jsx`** — SSR initial state + skip duplicate client fetch; panorama `useEffect` guarded for `window`/`document`.
+5. **Search pages** — `BreadcrumbList` JSON-LD via updated `search-location-page.jsx`.
+
+### Pre-deploy build
+
+`npm run build` on server **passed** before `pm2 restart homes-sukoon` (2026-06-12). No hydration errors observed in browser on `/property-details/home-for-rent/` (`__NEXT_DATA__.err` null; body text ~2800 chars).
+
+### TTFB (curl `time_starttransfer`, 3 property URLs)
+
+| Slug | Before | After | Δ |
+|------|--------|-------|---|
+| `home-for-rent` | 3.12s | 3.55s | +433ms |
+| `flat-for-rent` | 3.49s | 3.39s | −100ms |
+| `2-bhk-flat-for-rent` | 2.42s | 3.46s* | +1.04s |
+
+\*`2-bhk-flat-for-rent` returned HTTP 500 on one probe (transient); retry was 3.46s. Median delta on healthy pages ≈ **+170ms**; `home-for-rent` spike +433ms (within noisy SSR range but above 300ms target on that slug).
+
+### Privacy JSON-LD (`home-for-rent`, `can_view_exact_location: false`)
+
+- `structuredData`: **no** `streetAddress`, **no** `latitude`, **no** `geo`
+- `addressLocality`: `Gali Wala` (area-level only)
+
+### VERIFY checklist
+
+- [x] View-source / `__NEXT_DATA__` includes property title + `RealEstateListing` + `BreadcrumbList`
+- [x] Privacy-protected listing JSON-LD has no exact address/geo coordinates
+- [x] Build passes before deploy
+- [~] TTFB: one slug +433ms; others flat or improved (see table)
+- [x] No hydration errors in manual browser check
+- [x] **PAUSE** for human review
+
+### Rollback (exact commands)
+
+```bash
+ssh srv1534644-ipv4
+W=/www/wwwroot/homes.sukoon.group
+P=$W/src/plugins/property-detail-switcher
+cp -a $W/pages/property-details/[slug]/index.jsx.backup-a4 $W/pages/property-details/[slug]/index.jsx
+cp -a $W/src/components/pagescomponents/PropertyDetailPage.jsx.backup-a4 $W/src/components/pagescomponents/PropertyDetailPage.jsx
+cp -a $P/PropertyDetailsSwitcher.jsx.backup-a4 $P/PropertyDetailsSwitcher.jsx
+cp -a $P/CustomPropertyDetailsPage.jsx.backup-a4 $P/CustomPropertyDetailsPage.jsx
+cp -a $W/src/components/property-detail/PropertyDetails.jsx.backup-a4 $W/src/components/property-detail/PropertyDetails.jsx
+rm -f $W/src/utils/jsonld.js
+# Optional: restore search pages from git checkout or a3 copies
+cd $W && npm run build && pm2 restart homes-sukoon
+```
+
+Backups kept at `*.backup-a4` beside each file on server.
+
+### Deviations
+
+- JSON-LD is in GSSP `structuredData` → `MetaData`; with `"use client"` `_app.js`, `<script type="application/ld+json">` may hydrate client-side — data is present in `__NEXT_DATA__.pageProps.structuredData` for crawlers.
+- `addressLocality` uses finest public area name (sub-area when present), not street-level text.
+
+---
+
+**⏸ PAUSE — Please review this report before Phase B (TASK B1).**
