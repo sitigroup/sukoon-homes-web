@@ -199,3 +199,56 @@ Backups kept at `*.backup-a4` beside each file on server.
 ---
 
 **⏸ PAUSE — Please review this report before Phase B (TASK B1).**
+
+---
+
+## HTTP 500 investigation — `/property-details/2-bhk-flat-for-rent/` (pre-B1)
+
+| Source | Finding |
+|--------|---------|
+| Laravel API | `GET get_property?slug_id=2-bhk-flat-for-rent` → HTTP 200, `"No Data Found"`, `data: []` |
+| PM2 logs | `TypeError: Cannot read properties of null (reading 'area_listing')` in GSSP (`property-details/[slug].js`) |
+| Root cause | A4 `propertyBreadcrumbList(null, lang)` — explicit `null` bypasses default param `property = {}` |
+| Secondary | Occasional `ECONNRESET` on API proxy (transient, separate) |
+
+**Verdict:** Not a network blip — reproducible code bug when property slug missing from API.
+
+**Hotfix (deployed, staged in `web-fix/seo-system/a4/`):**
+- `jsonld.js` — `propertyBreadcrumbList` returns `null` when no `property.slug_id`
+- `property-details-index.jsx` — `return { notFound: true }` when property missing
+
+**Post-fix:** slug returns **HTTP 404** (verified 2026-06-12).
+
+---
+
+## TASK B1 — SeoEngine plugin scaffold + admin control plane
+
+**Status:** ✅ Deployed (2026-06-12)
+
+**Staged:** `web-fix/plugins/SeoEngine/src/` + `web-fix/patch-seo-engine-*.php` + `web-fix/seo-system/b1/deploy-b1-remote.sh`
+
+### What changed
+
+- New plugin `app/Plugins/SeoEngine/` — ServiceProvider, 7 migrations (`seo_engine_*` tables), settings service (10-min cache), admin Dashboard + Global Settings, public API `GET /api/seo-engine/settings`.
+- Registered in `config/app.php` via `patch-seo-engine-register.php` (backup: `config/app.php.bak-seo-engine-20260612-201156`).
+- Sidebar link before stock SEO Settings (backup: `sidebar.blade.php.bak-seo-engine-20260612-201156`).
+
+### Deploy note
+
+Unzip/SCP as **root** caused PHP-FPM `Permission denied` on plugin files until `chown -R www:www app/Plugins/SeoEngine`. Deploy script updated to fix ownership automatically.
+
+### DB backup
+
+Pre-migration backup attempted; long `mysqldump` was interrupted. Migrations are additive only (new `seo_engine_*` tables). Run `web-fix/seo-system/b1/backup-db.sh` on server before B2 if no fresh backup exists.
+
+### VERIFY checklist
+
+- [x] Migrations run clean — 7 tables: `seo_engine_settings`, `pages`, `slug_history`, `redirects`, `locality_stats`, `qa_pages`, `404_log`
+- [x] Plugin registered; admin menu item **SEO Engine** (requires `dashboard` / `settings` permissions on module `seo_engine` — assign in Roles if not visible)
+- [x] Settings seeded with defaults (identity, sameAs, knowsAbout, index threshold 3, budget bands, schema toggles, robots/llms text, AI-bot policy)
+- [x] `/api/seo-engine/settings` returns safe subset only — no `robots_txt`, `llms_txt`, API keys, or cron internals
+- [x] Cache clear busts both `seo_engine:settings:all` and `seo_engine:api:public_settings`
+
+### API sample (public fields)
+
+`site_name`, `site_url`, `logo_url`, `site_description`, `same_as`, `knows_about`, `index_threshold`, `budget_bands`, `schema_toggles`, `ai_bot_policy`

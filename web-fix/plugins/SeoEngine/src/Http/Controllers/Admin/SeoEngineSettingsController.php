@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Plugins\SeoEngine\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class SeoEngineSettingsController extends Controller
+{
+    private const AI_BOTS = [
+        'Googlebot',
+        'Bingbot',
+        'GPTBot',
+        'OAI-SearchBot',
+        'ChatGPT-User',
+        'ClaudeBot',
+        'Claude-SearchBot',
+        'PerplexityBot',
+        'Google-Extended',
+        'CCBot',
+        'Meta-ExternalAgent',
+    ];
+
+    private const SCHEMA_TYPES = [
+        'Organization',
+        'RealEstateAgent',
+        'RealEstateListing',
+        'BreadcrumbList',
+        'FAQPage',
+        'ItemList',
+    ];
+
+    private function denyUnlessSettings(): void
+    {
+        if (! function_exists('has_permissions') || ! has_permissions('settings', 'seo_engine')) {
+            abort(403);
+        }
+    }
+
+    public function index(SeoEngineSettingsService $settings): View
+    {
+        $this->denyUnlessSettings();
+
+        return view('seo-engine::admin.seo-engine.settings', [
+            'settings' => $settings->all(),
+            'aiBots' => self::AI_BOTS,
+            'schemaTypes' => self::SCHEMA_TYPES,
+        ]);
+    }
+
+    public function store(Request $request, SeoEngineSettingsService $settings): RedirectResponse
+    {
+        $this->denyUnlessSettings();
+
+        $validated = $request->validate([
+            'site_name' => ['required', 'string', 'max:255'],
+            'site_url' => ['required', 'url', 'max:512'],
+            'logo_url' => ['nullable', 'url', 'max:512'],
+            'site_description' => ['nullable', 'string', 'max:2000'],
+            'same_as' => ['nullable', 'array'],
+            'same_as.*' => ['nullable', 'url', 'max:512'],
+            'knows_about' => ['nullable', 'array'],
+            'knows_about.*' => ['nullable', 'string', 'max:120'],
+            'index_threshold' => ['required', 'integer', 'min:1', 'max:100'],
+            'budget_bands' => ['nullable', 'array'],
+            'budget_bands.*.label' => ['nullable', 'string', 'max:120'],
+            'budget_bands.*.min' => ['nullable', 'integer', 'min:0'],
+            'budget_bands.*.max' => ['nullable', 'integer', 'min:0'],
+            'schema_toggles' => ['nullable', 'array'],
+            'robots_txt' => ['nullable', 'string', 'max:20000'],
+            'llms_txt' => ['nullable', 'string', 'max:20000'],
+            'ai_bot_policy' => ['nullable', 'array'],
+            'ai_bot_policy.*' => ['nullable', 'in:allow,block'],
+        ]);
+
+        $sameAs = array_values(array_filter($validated['same_as'] ?? []));
+        $knowsAbout = array_values(array_filter($validated['knows_about'] ?? []));
+
+        $schemaToggles = [];
+        foreach (self::SCHEMA_TYPES as $type) {
+            $schemaToggles[$type] = $request->boolean('schema_toggles.' . $type);
+        }
+
+        $aiPolicy = [];
+        foreach (self::AI_BOTS as $bot) {
+            $aiPolicy[$bot] = $validated['ai_bot_policy'][$bot] ?? 'block';
+        }
+
+        $bands = [];
+        foreach ($validated['budget_bands'] ?? [] as $band) {
+            if (empty($band['label'])) {
+                continue;
+            }
+            $bands[] = [
+                'label' => $band['label'],
+                'min' => isset($band['min']) && $band['min'] !== '' ? (int) $band['min'] : null,
+                'max' => isset($band['max']) && $band['max'] !== '' ? (int) $band['max'] : null,
+            ];
+        }
+
+        $settings->setMany([
+            'site_name' => $validated['site_name'],
+            'site_url' => rtrim($validated['site_url'], '/'),
+            'logo_url' => $validated['logo_url'] ?? null,
+            'site_description' => $validated['site_description'] ?? null,
+            'same_as' => $sameAs,
+            'knows_about' => $knowsAbout,
+            'index_threshold' => (int) $validated['index_threshold'],
+            'budget_bands' => $bands ?: $settings->get('budget_bands'),
+            'schema_toggles' => $schemaToggles,
+            'robots_txt' => $validated['robots_txt'] ?? '',
+            'llms_txt' => $validated['llms_txt'] ?? '',
+            'ai_bot_policy' => $aiPolicy,
+        ]);
+
+        return back()->with('success', __('seo-engine::seo_engine.settings_saved'));
+    }
+
+    public function clearCache(SeoEngineSettingsService $settings): RedirectResponse
+    {
+        $this->denyUnlessSettings();
+        $settings->clearCache();
+
+        return back()->with('success', __('seo-engine::seo_engine.cache_cleared'));
+    }
+}
