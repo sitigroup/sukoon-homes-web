@@ -127,6 +127,8 @@ class SeoEngineSettingsService
     {
         Cache::forget(self::CACHE_KEY);
         Cache::forget('seo_engine:api:public_settings');
+        Cache::forget('seo_engine:api:robots_txt');
+        Cache::forget('seo_engine:api:llms_txt');
     }
 
     public function publicSubset(): array

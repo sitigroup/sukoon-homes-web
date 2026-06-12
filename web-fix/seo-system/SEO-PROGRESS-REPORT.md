@@ -401,4 +401,81 @@ php artisan seo-engine:build-sitemaps
 
 **Sample after regenerate:** `/rent/barmer/baldev-nagar/under-rs10000/` → title *Rent Under ₹10,000 in Baldev Nagar, Barmer | Sukoon Homes*
 
-**Pending (human):** Fix city id 28 duplicate in admin, then click Regenerate in dashboard.
+**Admin cleanup (2026-06-13):** Junk city id 28 (`baldev-nagar-barmer`), typo area Raj Colneyer, sub-area Saadsd removed in Area Wise; all locations consolidated under Barmer (id 22). Regenerate + `regen-and-purge.php` purged 29 stale registry rows.
+
+---
+
+## TASK B5 — /rent/ frontend, dynamic robots/llms, bot-files API
+
+**Status:** ✅ COMPLETE (2026-06-13)
+
+### What changed
+
+1. **Next.js `/rent/[[...segments]]` route** — GSSP fetches `GET /api/seo-engine/page`; `Cache-Control: public, s-maxage=21600, stale-while-revalidate=86400` on `/rent/` only (not `/property-details/`).
+2. **`RentPageView` + components** — SSR H1, intro, listing cards, FAQ accordion, breadcrumb + internal link blocks, `PopularSearches`.
+3. **JSON-LD** — `BreadcrumbList`, `ItemList`, `FAQPage` merged into page structured data.
+4. **Robots for combo pages** — `is_indexable=false` → normal 200 render with `noindex, nofollow` in `pageProps.robots` **and** `X-Robots-Tag` response header (hotfix in GSSP).
+5. **Redirect + 404 flow** — unknown path checks `GET /api/seo-engine/redirect`; miss logs via `POST /api/seo-engine/404-log` then Next 404.
+6. **Dynamic `robots.txt` / `llms.txt`** — `pages/robots.txt.js` + `pages/llms.txt.js` fetch SeoEngine API; static `public/robots.txt` removed (backup `public/robots.txt.backup-b5`).
+7. **Plugin API** — `SeoEngineBotFilesApiController` (`/api/seo-engine/robots-txt`, `/api/seo-engine/llms-txt`) merges A1 disallows + admin robots body + AI-bot policy + sitemap line; `SeoEngine404LogApiController` for rent 404 hits; settings cache bust for bot-file keys.
+
+### Files (staging → production)
+
+| Staging (`web-fix/seo-system/b5/`) | Production path |
+|-----------------------------------|-----------------|
+| `rent-[[...segments]].jsx` | `pages/rent/[[...segments]]/index.jsx` |
+| `RentPageView.jsx`, `RentPageComponents.jsx`, `rentPageApi.js`, `jsonld-rent.js` | `src/plugins/seo-engine/` |
+| `robots.txt.js`, `llms.txt.js` | `pages/robots.txt.js`, `pages/llms.txt.js` |
+| `deploy-b5-remote.sh` | run from workstation |
+| `regen-and-purge.php`, `audit-registry.php`, `verify-b5-rent.php` | server `/tmp/` helpers |
+
+| Plugin (`web-fix/plugins/SeoEngine/src/`) | Production |
+|---------------------------------------------|------------|
+| `SeoEngineBotFilesApiController.php` | `app/Plugins/SeoEngine/...` |
+| `SeoEngine404LogApiController.php`, `SeoEngine404Log.php` | same |
+| `routes/api.php`, `SeoEngineSettingsService.php` (cache keys) | same |
+
+### VERIFY checklist
+
+- [x] `curl -sI /rent/barmer/?lang=en` → `X-Robots-Tag: index, follow` + `Cache-Control: public, s-maxage=21600...`
+- [x] `curl -sI /rent/barmer/baldev-nagar/?lang=en` → `X-Robots-Tag: noindex, nofollow` (combo below threshold, 0 listings)
+- [x] View-source indexable page — title *Flats & Houses for Rent in Barmer | Sukoon Homes*, 3 listings, structured data in `__NEXT_DATA__`
+- [x] View-source noindex combo — `pageProps.robots` = `noindex, nofollow`, 0 listings, structured data present
+- [x] `/robots.txt` — dynamic; includes `Sitemap:`, `Disallow: /login`, GPTBot / Cloudflare content signals
+- [x] `npm run build` + PM2 `homes-sukoon` restart after removing static `public/robots.txt`
+- [x] Registry after admin cleanup + purge — **113 pages**, **1 indexable** (`/rent/barmer/`), **0 junk paths**
+- [x] Rent sitemap — 1 URL (`/rent/barmer/`) in `rent-pages.json` and live sitemap index
+- [~] PageSpeed mobile `/rent/barmer/` — **not scored this session** (PSI API daily quota 429; server has no Chrome for Lighthouse). Run manually: [PageSpeed Insights](https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fhomes.sukoon.group%2Frent%2Fbarmer%2F%3Flang%3Den&form_factor=mobile)
+
+### Registry snapshot (2026-06-13 post-purge)
+
+| page_type | count |
+|-----------|------:|
+| rent_city | 1 |
+| rent_area | 8 |
+| rent_subarea | 8 |
+| rent_combo_bhk | 32 |
+| rent_combo_type | 32 |
+| rent_combo_budget | 32 |
+| **Total** | **113** |
+
+| Indexable paths | count |
+|-----------------|------:|
+| `/rent/barmer/` | 1 |
+
+| Junk path patterns purged | count removed |
+|---------------------------|--------------:|
+| `baldev-nagar-barmer`, `raj-colneyer`, `saadsd` | 29 → **0 remaining** |
+
+### Deviations
+
+- **`meta name="robots"`** not in view-source for rent pages (same as A1 client `MetaData` pattern); crawlers receive **`X-Robots-Tag`** + `pageProps.robots` for SSR routes.
+- **Generator still emits junk paths** if stale Area Wise rows exist; `regen-and-purge.php` deletes + 301s to parent city after each generate until admin data is clean (now fixed).
+
+### Commit
+
+`seo: task B5 — /rent/ frontend, dynamic robots/llms, bot-files API`
+
+---
+
+**⏸ PAUSE — Please review this report before TASK B6.**
