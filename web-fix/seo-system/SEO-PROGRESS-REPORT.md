@@ -1,6 +1,6 @@
 # SEO System — Progress Report
 
-**Branch:** `seo-system` (not created — workspace `C:\Users\Sukoon\cursr` has no git repo; commits deferred until human initializes git)  
+**Branch:** `seo-system` → `origin` (`https://github.com/sitigroup/sukoon-homes-web.git`)  
 **Started:** 2026-06-03  
 **Spec:** `SUKOON_SEO_EXECUTE.md`
 
@@ -102,4 +102,35 @@ OK — all stored slugs match name-derived slugs.
 
 ---
 
-*Next: **TASK A3 — Wire Area Wise SEO + Organization entity***
+## TASK A3 — Wire Area Wise SEO + Organization entity
+
+**Status:** ✅ COMPLETE (2026-06-12)
+
+### What changed
+
+1. **Area Manager admin** — SEO Title + SEO Description on area and sub-area edit modals; saved via `AreaListingAdminController` validators/payloads.
+2. **AreaListing API** — `seo_title` / `seo_description` on areas and sub-areas in `areas` and `sub-areas` endpoints.
+3. **Search SSR** — `src/utils/locationSeoMeta.js` + unified search page loaders use Area Wise meta when present (fallback: existing `seo_settings` + location suffix).
+4. **`getDefaultSchemaMarkup()`** — Organization + RealEstateAgent `@graph`, `areaServed` (Barmer, Jodhpur, Rajasthan, India), `sameAs` / `knowsAbout` from env (`NEXT_PUBLIC_SCHEMA_*`, social URLs).
+
+### VERIFY checklist
+
+- [x] API returns `seo_title` / `seo_description` on areas (test: Baldev Nagar)
+- [x] `/search/barmer/baldev-nagar/` `<head>` shows custom title + description after DB update
+- [x] `/search/barmer/` still uses fallback (no area slug → no Area Wise override)
+- [x] Homepage view-source includes `RealEstateAgent` + `Barmer` in JSON-LD (no `"Global"`)
+- [x] `npm run build` + `php artisan optimize:clear` on server
+
+### Test data (production)
+
+Area `baldev-nagar` (id 67): `seo_title` = "Rent in Baldev Nagar Barmer | Sukoon Homes" (set via one-off script for verify; editable in admin UI).
+
+### Backups on server
+
+- `index.blade.php.backup-a3`, `area-actions.blade.php.backup-a3`, `sub-area-actions.blade.php.backup-a3`
+- `AreaListingAdminController.php.backup-a3`, `AreaListingApiController.php.backup-a3`
+- `helperFunction.js.backup-a3`
+
+---
+
+*Next: **TASK A4 — Property JSON-LD + SSR content** (pause for human review after)*
