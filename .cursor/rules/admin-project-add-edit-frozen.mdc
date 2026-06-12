@@ -1,0 +1,41 @@
+---
+description: Admin project create/edit flows are tested and frozen — do not modify unless the user explicitly asks.
+globs: "**/project/create.blade.php,**/project/edit.blade.php"
+alwaysApply: false
+---
+
+# Admin project add/edit — frozen (do not modify)
+
+The user completed testing on **admin Add Project** and **admin Edit Project**. Treat these flows as **production-stable**. Do not change them while working on other tasks unless the user **explicitly** requests changes to admin project create/edit.
+
+## Frozen scope
+
+- `resources/views/project/create.blade.php`
+- `resources/views/project/edit.blade.php`
+
+Shared dependencies (also frozen for **property** — do not edit for project work unless the user explicitly asks):
+
+- `app/Plugins/AreaListing/views/admin/partials/listing-location-fields.blade.php` — used with `listingType => 'project'`
+- `public/assets/js/maps-helper.js` — when the change would affect project create/edit pin/geocode
+
+Related backend behavior on save (do not refactor or “improve” unless asked):
+
+- `ProjectController` store/update + `AreaListingService::saveProjectLocation()` for admin project saves
+- Customer address fields: `address` (By Google), `client_address` (By Customer)
+
+## Verified behavior (preserve)
+
+- Map pin / Get Current Location → geocode → detected area/sub area UI
+- **By Google** and **By Customer** address fields on create and edit
+- Edit loads customer address from `area_listing_project_locations.manual_address`
+- Script tag: `maps-helper.js?v=20260522pinalways` (valid `asset('assets/js/maps-helper.js')` line)
+- Area Wise save links area/sub area on project save
+
+## Allowed without touching frozen files
+
+- User/agent portal, search, properties, Postman, drift/repair tools, other admin pages
+- Bug fixes **outside** the files above that do not require editing them
+
+## If a fix seems to require these files
+
+Stop and ask the user before editing anything in the frozen list.

@@ -1,0 +1,18 @@
+# Sukoon Homes — indexing-only exclusions (same as .cursorignore core list)
+# Skips codebase index; use @file if you must open one manually.
+
+**/node_modules/
+**/.next/
+**/vendor/
+**/storage/logs/
+**/bootstrap/cache/
+**/public/build/
+
+**/.dart_tool/
+**/backups/
+**/.gradle/
+**/android/.gradle/
+**/ios/Pods/
+**/coverage/
+**/.turbo/
+**/dist/

@@ -1,0 +1,17 @@
+{
+  "id": "area-listing-local",
+  "name": "Area Listing API (admin-homes)",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://admin-homes.sukoon.group",
+      "enabled": true
+    },
+    {
+      "key": "bearer_token",
+      "value": "REPLACE_WITH_FRESH_TOKEN",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

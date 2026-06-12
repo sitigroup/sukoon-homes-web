@@ -1,0 +1,16 @@
+Sukoon Homes — Final backup (local copy)
+=========================================
+
+Server backup (authoritative):
+  /www/wwwroot/admin-homes/storage/backups/sukoon-final-complete-20260521-040652/
+  /www/wwwroot/admin-homes/storage/backups/sukoon-final-complete-20260521-040652.tar.gz
+
+Local files in this folder:
+  sukoon-final-complete-20260521-040652.tar.gz  — full archive (plugins + patches + DB)
+  admin-AreaListing/                             — live Laravel plugin snapshot
+  admin-NearbyPlaces/                            — live Laravel plugin snapshot
+  web-plugins-from-server/                       — live Next.js src/plugins snapshot
+
+Restore instructions: see RESTORE.md in repo root (cursr/RESTORE.md)
+
+Created: 2026-05-21

@@ -1,0 +1,36 @@
+---
+description: Admin property create/edit flows are tested and frozen — do not modify unless the user explicitly asks.
+globs: "**/property/create.blade.php,**/property/edit.blade.php,**/listing-location-fields.blade.php,**/maps-helper.js"
+alwaysApply: false
+---
+
+# Admin property add/edit — frozen (do not modify)
+
+The user completed testing on **admin Add Property** and **admin Edit Property**. Treat these flows as **production-stable**. Do not change them while working on other tasks unless the user **explicitly** requests changes to admin property create/edit.
+
+## Frozen scope
+
+- `resources/views/property/create.blade.php`
+- `resources/views/property/edit.blade.php`
+- `app/Plugins/AreaListing/views/admin/partials/listing-location-fields.blade.php`
+- `public/assets/js/maps-helper.js` — only when the change would affect property create/edit pin/geocode (do not regress `whenDone` / jQuery `.always()` compatibility)
+
+Related backend behavior used on save (do not refactor or “improve” unless asked):
+
+- `AreaListingService` admin save paths (`area_listing_admin_save`, detected area/sub on save, address privacy via `decoratePropertyModel`)
+
+## Verified behavior (preserve)
+
+- Move map pin → geocode → detected area/sub UI (no `chain.finally` error)
+- Pending detected area enables Sub Area + **add/edit** for detected sub area name
+- Save creates/links area and sub area; full address for admin save
+- Script tag: `maps-helper.js?v=20260522pinalways` (valid `asset('assets/js/maps-helper.js')` line)
+
+## Allowed without touching frozen files
+
+- User/agent portal, search, projects, Postman, drift/repair tools, other admin pages
+- Bug fixes **outside** the files above that do not require editing them
+
+## If a fix seems to require these files
+
+Stop and ask the user before editing anything in the frozen list.

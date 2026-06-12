@@ -1,0 +1,31 @@
+{
+  "terminal.integrated.cwd": "C:\\Users\\Sukoon\\cursr",
+  "dart.flutterSdkPath": "G:\\develop\\flutter",
+  "dart.sdkPath": "G:\\develop\\flutter\\bin\\cache\\dart-sdk",
+  "java.jdt.ls.java.home": "G:\\develop\\Android\\Android Studio\\jbr",
+  "// Sukoon Homes — Performance Safe Mode": "",
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/vendor/**": true,
+    "**/storage/logs/**": true,
+    "**/bootstrap/cache/**": true,
+    "**/public/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/backups/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/vendor": true,
+    "**/storage/logs": true,
+    "**/bootstrap/cache": true,
+    "**/public/build": true,
+    "**/.dart_tool": true,
+    "**/backups": true
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.next": true
+  }
+}

@@ -1,0 +1,27 @@
+---
+description: Performance Safe Mode — minimal scanning, opened files only, no full-repo context
+alwaysApply: true
+---
+
+# Performance Safe Mode (Sukoon Homes)
+
+Cursor OOM protection. **Do not scan the whole project.**
+
+## Excluded paths (never index, search, or bulk-read)
+
+- `node_modules/`, `.next/`, `vendor/`
+- `storage/logs/`, `bootstrap/cache/`, `public/build/`
+- Also ignored: `.dart_tool/`, `backups/`, `dist/`, `build/` (see `.cursorignore`)
+
+## Agent behavior
+
+1. **Opened files first** — Prefer files the user has open or explicitly names. Do not load unrelated directories.
+2. **No full-site / full-repo audits** — No project-wide `grep`, `glob`, or `SemanticSearch` without a narrow path (e.g. `web-fix/plugins/theme/`).
+3. **No background exploration** — Do not spawn broad `explore` / `generalPurpose` subagents across the repo.
+4. **Small scope** — One folder or 1–3 files per investigation step.
+5. **Fresh context** — Do not assume or restore prior Composer/chat context from earlier sessions. Treat each task as new unless the user pastes prior state.
+6. **Trust Verification** — Only touch when the user explicitly asks; never scan `plugins/TrustVerification/` or `web-fix/plugins/trust-verification/` opportunistically.
+
+## Before large reads
+
+Ask or infer the smallest path. If unsure, use the user’s open editor tabs as the scope boundary.

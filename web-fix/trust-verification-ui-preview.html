@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sukoon Trust Verification — UI Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #000; color: #fff; line-height: 1.5; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(212,175,55,.35); background: rgba(212,175,55,.12); color: #D4AF37; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 500; }
+    h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); font-weight: 600; margin-top: 16px; }
+    .lead { color: #C9C9C9; margin-top: 12px; max-width: 36rem; }
+    .card { background: #1A1A1A; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 20px 24px; box-shadow: 0 8px 32px rgba(0,0,0,.45); margin-top: 16px; }
+    .gold { color: #D4AF37; }
+    .muted { color: #8A8A8A; font-size: 14px; }
+    .grid { display: grid; gap: 16px; margin-top: 24px; }
+    @media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    .pkg { position: relative; cursor: default; }
+    .pkg.selected { outline: 2px solid rgba(212,175,55,.4); }
+    .rec { position: absolute; top: -8px; right: 16px; background: #D4AF37; color: #000; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; }
+    .price { font-size: 1.75rem; font-weight: 700; margin: 12px 0 4px; }
+    .timeline { list-style: none; padding: 0; }
+    .timeline li { display: flex; gap: 16px; padding-bottom: 24px; position: relative; }
+    .timeline li:not(:last-child)::before { content: ""; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: rgba(212,175,55,.4); }
+    .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #D4AF37; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: #1A1A1A; color: #D4AF37; }
+    .dot.done { background: #D4AF37; color: #000; }
+    .btn { display: inline-block; background: #D4AF37; color: #000; font-weight: 600; padding: 12px 20px; border-radius: 16px; text-decoration: none; margin-top: 16px; font-size: 14px; }
+    .trust-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .trust-chip { background: #111; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 8px 12px; font-size: 12px; color: #C9C9C9; }
+    h2.section { font-size: 1.125rem; color: #D4AF37; margin: 32px 0 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge">Sukoon Homes Trust Verification</span>
+    <h1>Background verification you can trust</h1>
+    <p class="lead">Premium UI preview — open this file locally before deploying Next.js plugin pages.</p>
+    <div class="trust-row">
+      <span class="trust-chip">🔒 Secure verification</span>
+      <span class="trust-chip">🛡️ Privacy protected</span>
+      <span class="trust-chip">✉️ Report by email</span>
+    </div>
+
+    <h2 class="section">Package cards</h2>
+    <div class="grid grid-2">
+      <div class="card pkg">
+        <strong>Basic</strong>
+        <div class="price">₹499 <span class="muted" style="font-size:14px;font-weight:400">+ GST</span></div>
+        <p class="muted">Report in 72 hours</p>
+      </div>
+      <div class="card pkg selected">
+        <span class="rec">Recommended</span>
+        <strong class="gold">Standard</strong>
+        <div class="price">₹999 <span class="muted" style="font-size:14px;font-weight:400">+ GST</span></div>
+        <p class="muted">Report in 48 hours</p>
+      </div>
+    </div>
+
+    <h2 class="section">Order timeline</h2>
+    <div class="card">
+      <strong>Order progress</strong>
+      <ol class="timeline" style="margin-top:20px">
+        <li><span class="dot done">✓</span><div><strong>Submitted</strong></div></li>
+        <li><span class="dot done">✓</span><div><strong>Payment Confirmed</strong></div></li>
+        <li><span class="dot">3</span><div><strong>Verification Running</strong><br><span class="gold" style="font-size:12px">In progress</span></div></li>
+        <li><span class="dot" style="border-color:rgba(255,255,255,.2);color:#8A8A8A">4</span><div class="muted"><strong style="color:#8A8A8A">Analyst Review</strong></div></li>
+        <li><span class="dot" style="border-color:rgba(255,255,255,.2);color:#8A8A8A">5</span><div class="muted"><strong style="color:#8A8A8A">Report Ready</strong></div></li>
+      </ol>
+    </div>
+
+    <p class="muted" style="margin-top:32px">Live demo route after deploy: <code class="gold">/trust-verification-ui-demo</code></p>
+    <a class="btn" href="trust-verification-ui-preview.html">Refresh preview</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+---
+description: Do not modify wrteam/eBroker core; keep custom work in plugins and isolated patches
+alwaysApply: true
+---
+
+# wrteam core protection and plugin-first changes
+
+## Do not edit wrteam core when avoidable
+
+wrteam/eBroker ships updatable core code (admin Laravel, Next.js web, Flutter app). **Do not rewrite or bulk-edit core/vendor files** so script updates from wrteam can be applied without merge pain or broken plugins.
+
+Treat as **core (avoid direct edits)** unless the user explicitly approves a minimal patch:
+
+- **Admin Laravel:** `vendor/`, default `app/Http/Controllers/*`, `app/Models/*`, stock `resources/views/**` (property/project CRUD, layouts), routes and config that ship with the product
+- **Web (homes):** stock layout, redux slices, API client base, pages and components that are generic eBroker (not Sukoon-specific)
+- **Flutter:** `lib/` eBroker app structure, `pubspec.yaml` name `ebroker`, stock repositories/cubits/screens
+
+## Put custom work in plugins or extensions
+
+| Layer | Preferred location |
+|-------|-------------------|
+| Admin backend | `app/Plugins/{PluginName}/` — controllers, services, routes, migrations, `views/admin/partials/` |
+| Admin API | Plugin `Http/Controllers/Api/` + plugin routes |
+| Web frontend | New components under `src/components/`, plugin API modules (`*Api.js`), hooks — wire via existing extension points |
+| Flutter | New files under `lib/` (e.g. `lib/features/area_listing/`) — do not fork stock screens |
+
+Plugins (**AreaListing**, **NearbyPlaces**, etc.) must remain **self-contained**: own DB tables/migrations, services, admin UI partials, and API endpoints. Other code should call plugin APIs/services, not duplicate plugin logic inside core controllers.
+
+## When core must be touched
+
+1. **Prefer the smallest hook** — one partial include, one event/listener, one line in a patch script — not a full-file replacement of a wrteam view or controller.
+2. **Stage changes in `web-fix/`** (or `batch-a/`) with a named patch script (`patch-*.php`, `patch-*.py`, `*.sh`) and deploy only the diff needed on the server.
+3. **Document** what was patched and why in the patch folder or MANIFEST so it can be re-applied after a wrteam update.
+4. **Never** change unrelated lines in core files “while you are there.”
+
+## Before deploying
+
+- **Take a fresh backup first** — on the server run `bash scripts/final-sukoon-complete-backup.sh` (or equivalent) before any new plugin deploy, migration, or web build. Note the backup folder name in the patch MANIFEST or deploy notes.
+- Confirm the change lives in a **plugin** or a **documented minimal patch**, not a wholesale core overwrite.
+- If a wrteam update would overwrite the file, flag it and plan re-application of patches/plugins instead of editing core again blindly.
+
+## Do not auto-edit wrteam core in install scripts
+
+Deploy/install scripts in this repo must **not** silently modify `config/app.php`, `routes/api.php`, stock controllers, or other wrteam core. Allowed without extra approval:
+
+- Copy files into `app/Plugins/{PluginName}/`
+- Copy into `homes.sukoon.group/src/plugins/` and new Next.js pages under `src/pages/` or `pages/`
+- Plugin migrations via `php artisan migrate --path=app/Plugins/...`
+
+If a **one-line** provider registration in `config/app.php` is required (same pattern as existing AreaListing/NearbyPlaces), stage it as an **optional documented patch** in `web-fix/patch-*.php` and run only after backup + explicit user approval — never inside unattended installers.

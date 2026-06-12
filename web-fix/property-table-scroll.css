@@ -1,0 +1,54 @@
+/* Property list — wide bootstrap-table horizontal scroll UX */
+.property-list-page .property-table-scroll-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.property-list-page .property-table-scroll-hint {
+    font-size: 0.8125rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.property-list-page .bootstrap-table .fixed-table-container {
+    max-width: 100%;
+}
+
+.property-list-page .bootstrap-table .fixed-table-body {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #adb5bd #f1f3f5;
+}
+
+.property-list-page .bootstrap-table .fixed-table-body::-webkit-scrollbar {
+    height: 10px;
+}
+
+.property-list-page .bootstrap-table .fixed-table-body::-webkit-scrollbar-track {
+    background: #f1f3f5;
+    border-radius: 5px;
+}
+
+.property-list-page .bootstrap-table .fixed-table-body::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 5px;
+}
+
+.property-list-page .bootstrap-table .fixed-table-body::-webkit-scrollbar-thumb:hover {
+    background: #868e96;
+}
+
+/* Keep filter tabs from forcing page-wide horizontal scroll */
+.property-list-page #added-as-filter {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.property-list-page #main-content,
+.property-list-page .card-body {
+    overflow-x: hidden;
+}

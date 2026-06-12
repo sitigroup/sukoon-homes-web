@@ -1,0 +1,1694 @@
+{
+  "info": {
+    "_postman_id": "sukoon-trust-verification-task11b",
+    "name": "Sukoon Trust Verification API",
+    "description": "Task 11B \u2014 Production-safe QA kit.\n\n**Default run:** folder `Safe Regression` only.\n**Never** run the full collection on production.\n\nSet `run_destructive_tests=true` only on staging/local for Destructive, Rate Limit, Webhook Manual, Admin Session folders.\n\nCollection Runner: delay **1500 ms** between requests (`request_delay_ms`).\nNewman: `--delay-request 1500 --folder \"Safe Regression\"`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Safe Regression",
+      "item": [
+        {
+          "name": "1. Login (phone)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/user_signup",
+            "description": "Production-safe. Set customer_password in Sukoon Production environment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"{{customer_mobile}}\",\n  \"country_code\": \"{{customer_country_code}}\",\n  \"password\": \"{{customer_password}}\",\n  \"type\": \"1\",\n  \"logintype\": \"1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('No API error', () => pm.expect(j.error).to.eql(false));",
+                  "pm.test('Token present', () => pm.expect(j.token).to.be.a('string').and.not.empty);",
+                  "pm.environment.set('auth_token', j.token);",
+                  "if (j.data && j.data.id) pm.environment.set('customer_id', String(j.data.id));",
+                  "pm.collectionVariables.set('auth_token', j.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. GET packages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/packages?type=tenant&city=barmer"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const pkgs = pm.response.json().data;",
+                  "if (pkgs && pkgs.length) {",
+                  "  const p = pkgs.find(x => x.slug && x.slug.includes('tenant-standard')) || pkgs[0];",
+                  "  pm.environment.set('package_id', String(p.id));",
+                  "  pm.collectionVariables.set('package_id', String(p.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. POST create order (one per run)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders",
+            "description": "Creates exactly one order. Limit: 5/hour per user on production.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": \"{{package_id}}\",\n  \"city_slug\": \"barmer\",\n  \"notes\": \"Postman Safe Regression (Task 11B)\",\n  \"subject\": {\n    \"full_name\": \"Postman QA Tenant\",\n    \"phone\": \"9876501234\",\n    \"email\": \"qa-tv-postman@example.com\",\n    \"current_address\": \"Barmer QA\",\n    \"id_type\": \"Aadhaar\",\n    \"id_number\": \"1234-5678-9012\",\n    \"consent_given\": true\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('error false', () => pm.expect(j.error).to.eql(false));",
+                  "pm.test('order_number present', () => pm.expect(j.data.order_number).to.match(/^TV-/));",
+                  "pm.environment.set('order_id', String(j.data.id));",
+                  "pm.environment.set('order_number', j.data.order_number);",
+                  "pm.environment.set('cashfree_test_order', String(j.data.id));",
+                  "pm.collectionVariables.set('order_id', String(j.data.id));",
+                  "pm.environment.unset('tv_payment_intent_used_' + j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. POST upload document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/documents",
+            "description": "Attach samples/qa-id-front.jpg if Runner does not auto-attach.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "doc_type",
+                  "value": "id_front",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [
+                    "samples/qa-id-front.jpg"
+                  ]
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 422) {",
+                  "  const msg = (pm.response.json().message || '').toLowerCase();",
+                  "  pm.test('Hint: attach samples/qa-id-front.jpg in Body \u2192 form-data \u2192 file', () => {",
+                  "    pm.expect(msg).to.include('__never__');",
+                  "  });",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('error false', () => pm.expect(j.error).to.eql(false));",
+                  "if (j.data && j.data.id) {",
+                  "  pm.environment.set('document_id', String(j.data.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. POST payment-intent (max once per order)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/payment-intent",
+            "description": "Skipped on re-run if tv_payment_intent_used_{order_id} is true. Limit: 5/hour per order.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_method\": \"cashfree\",\n  \"platform\": \"web\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}",
+                  "",
+                  "const oid = String(pm.environment.get('order_id') || '');",
+                  "const key = 'tv_payment_intent_used_' + oid;",
+                  "if (oid && pm.environment.get(key) === 'true') {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const oid = String(pm.environment.get('order_id') || '');",
+                  "  if (oid) pm.environment.set('tv_payment_intent_used_' + oid, 'true');",
+                  "}",
+                  "",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.data && j.data.payment_transaction_id) {",
+                  "  pm.environment.set('payment_transaction_id', String(j.data.payment_transaction_id));",
+                  "}",
+                  "const linkId = j.data && j.data.payment_intent && j.data.payment_intent.id;",
+                  "if (linkId) pm.environment.set('cashfree_link_id', String(linkId));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. POST confirm-payment (once)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/confirm-payment",
+            "description": "Does not complete Cashfree checkout \u2014 sync only. Safe if payment-intent ran once.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_transaction_id\": \"{{payment_transaction_id}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. GET order (read payment state)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const ps = pm.response.json().data.payment_status;",
+                  "pm.test('payment pending or paid', () => pm.expect(['pending','paid']).to.include(ps));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. GET report download (read-only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/report/download"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404 if no report yet', () => pm.expect(pm.response.code).to.be.oneOf([200, 404]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ],
+      "description": "DEFAULT production run. Runner/Newman: this folder only. Set Collection Runner delay 1500ms (or Newman --delay-request 1500)."
+    },
+    {
+      "name": "Destructive Tests",
+      "item": [
+        {
+          "name": "Login \u2014 invalid password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/user_signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"wrong-password-qa\",\n  \"type\": \"3\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 400 or 401', () => pm.expect(pm.response.code).to.be.oneOf([400, 401, 422]));",
+                  "pm.test('error true', () => pm.expect(pm.response.json().error).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST order \u2014 missing consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": \"{{package_id}}\",\n  \"city_slug\": \"barmer\",\n  \"subject\": {\n    \"full_name\": \"No Consent\",\n    \"phone\": \"9876509999\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('error true', () => pm.expect(pm.response.json().error).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST order \u2014 invalid package_id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": 999999,\n  \"subject\": {\n    \"full_name\": \"Bad Pkg\",\n    \"phone\": \"9876509998\",\n    \"consent_given\": true\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 404 or 422', () => pm.expect(pm.response.code).to.be.oneOf([404, 422]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST cancel order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST upload \u2014 invalid doc_type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/documents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "doc_type",
+                  "value": "not_a_real_type",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('error true', () => pm.expect(pm.response.json().error).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST upload \u2014 fake PDF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/documents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "doc_type",
+                  "value": "pan",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [
+                    "samples/fake.pdf"
+                  ]
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('error true', () => pm.expect(pm.response.json().error).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST upload \u2014 jpg.exe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/documents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "doc_type",
+                  "value": "id_back",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [
+                    "samples/jpg.exe"
+                  ]
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('error true', () => pm.expect(pm.response.json().error).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET orders \u2014 no auth",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.request.headers.remove('Authorization');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET report \u2014 unauthorized token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/report/download"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer invalid-token-qa' });"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 401 or 403', () => pm.expect(pm.response.code).to.be.oneOf([401, 403]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET download \u2014 deleted document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}/documents/{{deleted_document_id}}/download",
+            "description": "Set deleted_document_id first."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST create order (audit extra)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders",
+            "description": "Extra order for audit \u2014 counts toward 5/hour limit.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": \"{{package_id}}\",\n  \"city_slug\": \"barmer\",\n  \"notes\": \"Postman Destructive audit\",\n  \"subject\": {\n    \"full_name\": \"Postman QA Tenant\",\n    \"phone\": \"9876501234\",\n    \"email\": \"qa-tv-postman@example.com\",\n    \"current_address\": \"Barmer QA\",\n    \"id_type\": \"Aadhaar\",\n    \"id_number\": \"1234-5678-9012\",\n    \"consent_given\": true\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('error false', () => pm.expect(j.error).to.eql(false));",
+                  "pm.test('order_number present', () => pm.expect(j.data.order_number).to.match(/^TV-/));",
+                  "pm.environment.set('order_id', String(j.data.id));",
+                  "pm.environment.set('order_number', j.data.order_number);",
+                  "pm.environment.set('cashfree_test_order', String(j.data.id));",
+                  "pm.collectionVariables.set('order_id', String(j.data.id));",
+                  "pm.environment.unset('tv_payment_intent_used_' + j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Requires run_destructive_tests=true. Never run on production by default."
+    },
+    {
+      "name": "Rate Limit Tests",
+      "item": [
+        {
+          "name": "POST create order (run 6\u00d7 in Runner to trigger 429)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders",
+            "description": "NEVER on production unless run_destructive_tests=true. 6 quick runs \u2192 429.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": \"{{package_id}}\",\n  \"city_slug\": \"barmer\",\n  \"notes\": \"Postman rate-limit probe\",\n  \"subject\": {\n    \"full_name\": \"Postman QA Tenant\",\n    \"phone\": \"9876501234\",\n    \"email\": \"qa-tv-postman@example.com\",\n    \"current_address\": \"Barmer QA\",\n    \"id_type\": \"Aadhaar\",\n    \"id_number\": \"1234-5678-9012\",\n    \"consent_given\": true\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "  pm.test('Rate limited', () => pm.response.to.have.status(429));",
+                  "  pm.test('retry_after present', () => pm.expect(pm.response.json().retry_after).to.be.a('number'));",
+                  "} else {",
+                  "  pm.test('Under limit', () => pm.expect(pm.response.code).to.be.oneOf([201, 422]));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Stress test only. Requires run_destructive_tests=true."
+    },
+    {
+      "name": "Webhook Manual Tests",
+      "item": [
+        {
+          "name": "POST webhook \u2014 invalid signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "x-webhook-timestamp",
+                "value": "1"
+              },
+              {
+                "key": "x-webhook-signature",
+                "value": "invalid"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/webhook/cashfree",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PAYMENT_SUCCESS_WEBHOOK\",\n  \"data\": {\n    \"link_id\": \"link_invalid\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST webhook \u2014 valid signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/webhook/cashfree",
+            "description": "Requires run_destructive_tests=true AND cashfree_webhook_secret. Run payment-intent first.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PAYMENT_SUCCESS_WEBHOOK\",\n  \"data\": {\n    \"link_id\": \"{{cashfree_link_id}}\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!secret) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "const secret = pm.environment.get('cashfree_webhook_secret') || '';",
+                  "const ts = Math.floor(Date.now() / 1000).toString();",
+                  "const payload = pm.variables.replaceIn(pm.request.body.raw);",
+                  "const sig = CryptoJS.HmacSHA256(ts + payload, secret).toString(CryptoJS.enc.Base64);",
+                  "pm.request.headers.upsert({ key: 'x-webhook-timestamp', value: ts });",
+                  "pm.request.headers.upsert({ key: 'x-webhook-signature', value: sig });"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!['true', '1', 'yes'].includes(String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase()) || !secret) {",
+                  "    pm.test('Skipped \u2014 set run_destructive_tests=true and cashfree_webhook_secret', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (secret && ['true','1','yes'].includes(String(pm.environment.get('run_destructive_tests')||'false').toLowerCase())) {",
+                  "  pm.test('Status 200 or 422', () => pm.expect(pm.response.code).to.be.oneOf([200, 422]));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST webhook \u2014 duplicate (run twice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/webhook/cashfree",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PAYMENT_SUCCESS_WEBHOOK\",\n  \"data\": {\n    \"link_id\": \"{{cashfree_link_id}}\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!secret) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "const secret = pm.environment.get('cashfree_webhook_secret') || '';",
+                  "const ts = Math.floor(Date.now() / 1000).toString();",
+                  "const payload = pm.variables.replaceIn(pm.request.body.raw);",
+                  "const sig = CryptoJS.HmacSHA256(ts + payload, secret).toString(CryptoJS.enc.Base64);",
+                  "pm.request.headers.upsert({ key: 'x-webhook-timestamp', value: ts });",
+                  "pm.request.headers.upsert({ key: 'x-webhook-signature', value: sig });"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!['true', '1', 'yes'].includes(String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase()) || !secret) {",
+                  "    pm.test('Skipped \u2014 set run_destructive_tests=true and cashfree_webhook_secret', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (secret && ['true','1','yes'].includes(String(pm.environment.get('run_destructive_tests')||'false').toLowerCase())) {",
+                  "  pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST webhook \u2014 paid downgrade (valid sig)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/webhook/cashfree",
+            "description": "Run only on already-paid orders.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PAYMENT_FAILED_WEBHOOK\",\n  \"data\": {\n    \"link_id\": \"{{cashfree_link_id}}\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!secret) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "const secret = pm.environment.get('cashfree_webhook_secret') || '';",
+                  "const ts = Math.floor(Date.now() / 1000).toString();",
+                  "const payload = pm.variables.replaceIn(pm.request.body.raw);",
+                  "const sig = CryptoJS.HmacSHA256(ts + payload, secret).toString(CryptoJS.enc.Base64);",
+                  "pm.request.headers.upsert({ key: 'x-webhook-timestamp', value: ts });",
+                  "pm.request.headers.upsert({ key: 'x-webhook-signature', value: sig });"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (!['true', '1', 'yes'].includes(String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase()) || !secret) {",
+                  "    pm.test('Skipped \u2014 set run_destructive_tests=true and cashfree_webhook_secret', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "const secret = (pm.environment.get('cashfree_webhook_secret') || '').trim();",
+                  "if (secret && ['true','1','yes'].includes(String(pm.environment.get('run_destructive_tests')||'false').toLowerCase())) {",
+                  "  pm.test('Webhook accepted', () => pm.expect(pm.response.code).to.be.oneOf([200, 422]));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET order \u2014 still paid after failed webhook",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/trust-verification/orders/{{order_id}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}",
+                  "",
+                  "",
+                  "if (pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token')) {",
+                  "    const t = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + t });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Not failed', () => pm.expect(pm.response.json().data.payment_status).to.not.eql('failed'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Manual webhook QA. Requires run_destructive_tests=true and cashfree_webhook_secret for signed calls."
+    },
+    {
+      "name": "Admin Session Tests",
+      "item": [
+        {
+          "name": "GET admin queue (no session)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/trust-verification"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Not open JSON API', () => pm.expect(pm.response.code).to.be.oneOf([200, 302, 401, 403, 404]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET admin order (no session)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/trust-verification/orders/1"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Not open JSON API', () => pm.expect(pm.response.code).to.be.oneOf([200, 302, 401, 403, 404]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST admin report upload (no session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/trust-verification/orders/{{order_id}}/report"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || pm.collectionVariables.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "        pm.execution.skipRequest();",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const v = String(pm.environment.get('run_destructive_tests') || 'false').toLowerCase();",
+                  "if (!['true', '1', 'yes'].includes(v)) {",
+                  "    pm.test('Skipped \u2014 run_destructive_tests is not true', () => pm.expect(true).to.eql(true));",
+                  "}",
+                  "",
+                  "",
+                  "pm.test('Denied without session', () => pm.expect(pm.response.code).to.be.oneOf([302, 401, 403, 419, 404]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Browser session admin routes. Requires run_destructive_tests=true."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://admin-homes.sukoon.group"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api/trust-verification"
+    },
+    {
+      "key": "run_destructive_tests",
+      "value": "false"
+    },
+    {
+      "key": "request_delay_ms",
+      "value": "1500"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "customer_id",
+      "value": ""
+    },
+    {
+      "key": "order_id",
+      "value": ""
+    },
+    {
+      "key": "order_number",
+      "value": ""
+    },
+    {
+      "key": "package_id",
+      "value": ""
+    },
+    {
+      "key": "document_id",
+      "value": ""
+    },
+    {
+      "key": "payment_transaction_id",
+      "value": ""
+    },
+    {
+      "key": "cashfree_link_id",
+      "value": ""
+    },
+    {
+      "key": "cashfree_test_order",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "cashfree_webhook_secret",
+      "value": ""
+    },
+    {
+      "key": "tv_webhook_secret",
+      "value": ""
+    },
+    {
+      "key": "other_customer_token",
+      "value": ""
+    },
+    {
+      "key": "deleted_document_id",
+      "value": ""
+    },
+    {
+      "key": "customer_email",
+      "value": "hemssarda@gmail.com"
+    },
+    {
+      "key": "customer_password",
+      "value": ""
+    },
+    {
+      "key": "customer_mobile",
+      "value": "9990687827"
+    },
+    {
+      "key": "customer_country_code",
+      "value": "91"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const tv = pm.environment.get('auth_token') || pm.collectionVariables.get('auth_token');",
+          "const url = pm.request.url.toString();",
+          "if (tv && url.includes('/api/trust-verification') && !url.includes('webhook')) {",
+          "  pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + tv });",
+          "}",
+          "pm.request.headers.upsert({ key: 'Accept', value: 'application/json' });"
+        ]
+      }
+    }
+  ]
+}

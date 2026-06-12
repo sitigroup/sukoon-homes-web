@@ -1,0 +1,95 @@
+# Sukoon Homes — Cursor Rules
+# This file is read by Cursor AI on every prompt. Keep it accurate.
+
+## Project identity
+- Product: Sukoon Homes — real-estate platform built on WRTeam eBroker
+- Stack: Laravel (PHP 8.1+) backend + Next.js frontend
+- Server: srv1534644
+- Admin URL: https://admin-homes.sukoon.group
+- Web URL:   https://homes.sukoon.group
+
+## Absolute rules — never break these
+- NEVER edit WRTeam core files. Plugin/module only.
+- NEVER make destructive DB changes. Additive migrations only.
+- NEVER hardcode Barmer or any city. Use dynamic city resolution.
+- NEVER write SQL directly. Use Eloquent or Query Builder.
+- NEVER use max(id)+1 for sequence generation. Use the rental_agreement_sequences table with lockForUpdate().
+- NEVER expose private files via public URLs. All downloads go through a signed controller.
+- NEVER put gold (#B89A4A) on buttons, nav, or focus rings. Gold is accent only.
+- NEVER skip audit logging on status changes, downloads, or uploads.
+- NEVER auto-complete an agreement when a signed copy is uploaded. Admin must mark completed.
+
+## Plugin structure (follow TrustVerification as the pattern)
+- Laravel plugin path:  app/Plugins/{PluginName}/
+- Namespace:            App\Plugins\{PluginName}\
+- Sub-folders:          Contracts/ Controllers/ Models/ Providers/ Services/
+- Migrations path:      app/Plugins/{PluginName}/database/migrations/
+- Views path:           app/Plugins/{PluginName}/views/
+- View namespace:       '{plugin-name}::admin.index'
+- Routes registered in: RentalAgreementServiceProvider::boot()
+- Provider registered in: config/app.php providers array
+
+## Rental Agreement plugin — Task 17A (foundation, current task)
+- Plugin path:      app/Plugins/RentalAgreement/
+- Namespace:        App\Plugins\RentalAgreement\
+- Admin route base: /rental-agreements
+- Status flow v1:   draft → generated → signed_copy_uploaded → completed | cancelled
+- Statuses reserved for v2 (DO NOT use in v1 UI): pending_payment, paid, sent_for_signing, signed_by_owner, signed_by_tenant
+- PDF library:      barryvdh/laravel-dompdf — NOT yet installed, requires ops approval. PdfService is a stub.
+- Notifications:    Deferred. Add TODO comments at hook points only.
+- Hindi / i18n:     Deferred to v2. Use __() on all strings.
+- Lock-in period:   Informational only. No enforcement.
+- Legal review:     Required before production go-live. See LEGAL-REVIEW-CLAUSES-APPROVED.md gate.
+
+## Clause tokens (rendered by RentalAgreementPdfService::renderTokens)
+{{tenant_name}} {{owner_name}} {{property_address}} {{monthly_rent}}
+{{security_deposit}} {{start_date}} {{end_date}} {{notice_period_days}}
+{{lock_in_months}} {{city}} {{agreement_number}}
+
+## UI / Blade rules
+- Primary button bg:  #1F2937 (graphite)
+- Primary hover:      #111827
+- Border:             #D1D5DB
+- Muted text:         #6B7280
+- Card bg:            #FFFFFF
+- Gold accent:        #B89A4A — ONLY on: agreement number badge, stepper dot, small premium label
+- Gold light bg:      #F5EED8
+- Status pills use semantic colours, never gold
+- All Blade strings wrapped in __() for future i18n
+
+## Signed copy upload rules
+- Admin: can upload for any agreement
+- Customer: can upload only their own agreement (check customer_id)
+- One active copy at a time (new upload overwrites signed_pdf_path)
+- Audit log must record every upload including replacements
+- Allowed types: PDF, JPG, PNG | Max size: 10MB
+- Upload does NOT auto-complete the agreement
+
+## Audit actions (exhaustive v1 list — no others)
+agreement_created | agreement_updated | agreement_pdf_generated
+agreement_downloaded | agreement_signed_copy_uploaded
+agreement_status_changed | agreement_cancelled
+
+## Agreement numbering
+- Format: RA-{YEAR}-{000001}
+- Table:  rental_agreement_sequences
+- Method: DB::transaction with lockForUpdate() on the sequence row
+- Never use: max(id)+1, Redis, cache, UUID for this
+
+## File permissions after deploy (critical — learned from TrustVerification)
+chown -R www:www app/Plugins/RentalAgreement
+find app/Plugins/RentalAgreement -type d -exec chmod 755 {} \;
+find app/Plugins/RentalAgreement -type f -exec chmod 644 {} \;
+
+## What NOT to build in Task 17A (do these in 17B)
+- Frontend wizard (Next.js)
+- PDF generation (pending library approval)
+- Clause seeder (pending legal review)
+- Notifications
+- Payment integration
+- eSign / eStamp
+
+## Trust Verification (already live — do not touch)
+- Plugin: app/Plugins/TrustVerification/
+- Tables: tv_packages, tv_orders, tv_subjects, tv_checks, tv_documents, tv_settings, tv_cities
+- Status: Production-ready, Phases A–D complete

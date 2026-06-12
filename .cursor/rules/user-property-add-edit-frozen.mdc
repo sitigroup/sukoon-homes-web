@@ -1,0 +1,58 @@
+---
+description: User portal property add/edit is tested and frozen — do not modify unless the user explicitly asks.
+globs: "**/components/agent/property/AddProperty.jsx,**/components/agent/property/EditProperty.jsx,**/AddProperty.jsx,**/EditProperty.jsx"
+alwaysApply: false
+---
+
+# User property add & edit — frozen (do not modify)
+
+The user completed testing on **user portal Add Property** (`/user/add-property`) and **Edit Property** (`/user/edit-property`). Treat these flows as **production-stable**. Do not change them while working on **agent** project/property testing unless the user **explicitly** requests changes to user property add/edit.
+
+## Frozen scope (frontend)
+
+| File | Role |
+|------|------|
+| `src/components/agent/property/AddProperty.jsx` | User + agent add property (user route via `isUserRoute` / `/user/`) |
+| `src/components/agent/property/EditProperty.jsx` | User + agent edit property (user route via `/user/` path) |
+
+## Verified user-property behavior (preserve)
+
+- Map pin / GPS → geocode → area & sub-area suggest or link when name matches master
+- **By Google** and **By Customer** address fields saved on submit (`manual_address`, `client_address`, `customer_address`)
+- `buildAreaListingSaveFields(..., { isUserPortal: true })` on save — suggest-only for new area/sub; link existing names
+- `area_listing_user_portal` + `area_listing_user_suggested` sent to API
+- After admin approves listing: area/sub materialized in master DB; suggestions cleared
+- Redirect to `/user/listings?tab=properties` after successful save
+
+## Related backend (frozen for user **property** saves — ask before editing)
+
+- Property create/update API (`PropertController.php` / `PropertyApiController.php` — user portal post/update)
+- `AreaListingService::savePropertyLocation()`, `buildMergedPropertyAreaListingRequest()`, user-portal branches in `saveListingLocation()`
+- `materializeLocationOnListingApproval()` on property approval
+- `pickManualAddressFromRequest()` / merged address fields on property save
+
+## Shared components (frozen for user portal — agent changes need care)
+
+Used by **user + agent** and **project + property**. For **agent** testing you may edit only if **user** project and property behavior stays unchanged — otherwise **stop and ask the user**.
+
+- `LocationComponent.jsx`
+- `areaListingPermissions.js`
+- `AreaSubAreaSelector.jsx`
+- `apiRoutes.js` — `postPropertyApi` / `updatePostProperty` and related appends
+
+## Already frozen separately
+
+- User project add/edit: `user-project-add-edit-frozen.mdc`
+- Admin property blades: `admin-property-add-edit-frozen.mdc`
+- Admin project blades: `admin-project-add-edit-frozen.mdc`
+- Project area backend: `admin-project-area-listing-frozen.mdc` (`AreaListingService.php`)
+
+## Allowed without touching frozen property files
+
+- **Agent** project/property add/edit (next test phase)
+- Search, listings, details pages, admin approval UI (non-blade), Postman, repair scripts
+- Bug fixes that do **not** require editing files in this rule
+
+## If a fix seems to require these files
+
+Stop and ask the user before editing anything in the frozen list.

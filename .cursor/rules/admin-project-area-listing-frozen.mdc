@@ -1,0 +1,29 @@
+---
+description: Project area/sub-area backend workflow is frozen — do not modify unless the user explicitly asks.
+globs: "**/AreaListingService.php"
+alwaysApply: false
+---
+
+# Project area/sub-area backend — frozen
+
+Backend area listing logic for **projects** is production-stable. User **project** add/edit UI is frozen under `user-project-add-edit-frozen.mdc`.
+
+## Frozen scope
+
+- `AreaListingService.php` — user portal project save, `materializeLocationOnListingApproval`, suggestion resolve/link for projects
+
+## Verified behavior (preserve)
+
+- User portal: suggest new area/sub; link when name matches existing master
+- Admin approves project: materialize area/sub in master DB; clear matching suggestions
+- Customer manual address saved to `area_listing_project_locations.manual_address`
+- Admin approval modal shows Google + customer address + area/sub for review
+
+## Allowed without touching frozen files
+
+- User **property** flows, search, unrelated admin pages, Postman, one-off repair scripts
+- Frontend property work (see `user-project-add-edit-frozen.mdc` for shared component caution)
+
+## If a fix seems to require these files
+
+Stop and ask the user before editing.

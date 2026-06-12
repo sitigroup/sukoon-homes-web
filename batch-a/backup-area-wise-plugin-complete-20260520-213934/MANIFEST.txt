@@ -1,0 +1,10 @@
+Area Wise Plugin - Fresh Complete Backup
+Created: 20260520-213934
+
+plugin-full/AreaListing/ - full plugin
+plugin/ - key patched files
+nearby/NearbyPlacesService.php
+controllers/ProjectController.php
+frontend/ - homes.sukoon.group location UI
+db/area-listing-tables.sql
+CHECKSUMS.sha256

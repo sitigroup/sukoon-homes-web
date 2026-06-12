@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "name": "Local — New project",
+      "path": "../Documents/New project"
+    }
+  ],
+  "settings": {
+    "remote.SSH.configFile": "C:\\Users\\Sukoon\\.ssh\\config",
+    "remote.SSH.remotePlatform": {
+      "srv1534644": "linux"
+    }
+  }
+}

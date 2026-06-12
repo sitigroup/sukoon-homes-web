@@ -1,0 +1,1743 @@
+/* Sukoon Trust Verification — light premium (matches Sukoon Homes site) */
+
+.page {
+  min-height: 50vh;
+  background: #ffffff;
+  color: #111827;
+  position: relative;
+  overflow: hidden;
+}
+
+.pageGlow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 45% at 50% -10%,
+    rgba(184, 154, 74, 0.06),
+    transparent 70%
+  );
+}
+
+.pageInner {
+  position: relative;
+  z-index: 1;
+}
+
+.container {
+  width: 100%;
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px 16px 48px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 32px 24px 56px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 40px 32px 64px;
+  }
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #faf9f6 0%, #ffffff 45%, #f8f9fa 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 28px 20px 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding: 36px 32px 40px;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(184, 154, 74, 0.22);
+  background: rgba(184, 154, 74, 0.06);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8f7840;
+  letter-spacing: 0.02em;
+}
+
+.heroTitle {
+  margin: 16px 0 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+@media (min-width: 640px) {
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heroTitle {
+    font-size: 2.75rem;
+  }
+}
+
+.heroSubtitle {
+  margin: 12px 0 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+@media (min-width: 640px) {
+  .heroSubtitle {
+    font-size: 1.125rem;
+  }
+}
+
+.heroTopRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .heroTopRow {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+.heroOrdersDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .heroOrdersDesktop {
+    display: block;
+    flex-shrink: 0;
+  }
+}
+
+.heroOrdersMobile {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (min-width: 768px) {
+  .heroOrdersMobile {
+    display: none;
+  }
+}
+
+.heroToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+@media (min-width: 768px) {
+  .heroToolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+}
+
+.trustBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.trustBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6b7280;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+@media (min-width: 640px) {
+  .trustBadge {
+    font-size: 14px;
+  }
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #1f2937;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
+}
+
+.btnPrimary:hover {
+  background: #111827;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.14);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btnSecondary:hover {
+  border-color: rgba(184, 154, 74, 0.35);
+  background: #f3f4f6;
+}
+
+.cityLabel {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.cityPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cityPill {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.cityPill:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.cityPillActive {
+  border-color: #b89a4a;
+  background: rgba(184, 154, 74, 0.08);
+  color: #8f7840;
+}
+
+.sectionTitle {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+@media (min-width: 640px) {
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+}
+
+.sectionSubtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.serviceGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .serviceGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+.sampleReportRow {
+  margin-top: 8px;
+  margin-bottom: 32px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #f8f9fa;
+}
+
+.sampleReportLabel {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.sampleReportActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .sampleReportActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.serviceCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.serviceCard:hover {
+  border-color: rgba(184, 154, 74, 0.32);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  background: #f3f4f6;
+}
+
+.serviceCardTenant {
+  background: linear-gradient(145deg, #faf9f6 0%, #ffffff 60%);
+}
+
+.serviceCardOwner {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.serviceIcon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.serviceCardTitle {
+  margin: 12px 0 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.serviceCard:hover .serviceCardTitle {
+  color: #1f2937;
+}
+
+.serviceCardDesc {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #6b7280;
+  flex: 1;
+}
+
+.servicePrice {
+  margin: 16px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.servicePriceLabel {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.servicePriceAmount {
+  color: #b89a4a;
+  font-weight: 600;
+}
+
+.serviceCta {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.serviceCtaArrow {
+  color: #b89a4a;
+}
+
+.otherCities {
+  margin-bottom: 40px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e5e7eb;
+}
+
+.otherCitiesTitle {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.cityCardGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .cityCardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.cityCard {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.cityCard:hover {
+  border-color: rgba(184, 154, 74, 0.28);
+  background: #f3f4f6;
+}
+
+.cityCardActive {
+  border-color: #b89a4a;
+  background: rgba(184, 154, 74, 0.06);
+  box-shadow: 0 4px 12px rgba(184, 154, 74, 0.1);
+}
+
+.cityCardName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cityCardMeta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* FAQ */
+.faqCard {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.faqHeader {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 20px;
+  background: #f8f9fa;
+}
+
+@media (min-width: 640px) {
+  .faqHeader {
+    padding: 18px 24px;
+  }
+}
+
+.faqHeaderTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.faqItem {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.faqItem:last-child {
+  border-bottom: none;
+}
+
+.faqButton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border: none;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.faqButton:hover {
+  background: #f3f4f6;
+}
+
+@media (min-width: 640px) {
+  .faqButton {
+    padding: 18px 24px;
+    font-size: 16px;
+  }
+}
+
+.faqToggle {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: #b89a4a;
+  transition: transform 0.2s ease;
+}
+
+.faqToggleOpen {
+  transform: rotate(45deg);
+}
+
+.faqAnswer {
+  margin: 0;
+  padding: 0 20px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b7280;
+  background: #ffffff;
+}
+
+@media (min-width: 640px) {
+  .faqAnswer {
+    padding: 0 24px 18px;
+  }
+}
+
+/* Legal footer */
+.legalCard {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 20px 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.legalLabel {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.legalDisclaimer {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+  text-align: left;
+}
+
+.legalLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: flex-start;
+  font-size: 13px;
+}
+
+.legalLinksCenter {
+  justify-content: center;
+}
+
+.legalLink {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.legalLink:hover {
+  color: #b89a4a;
+  text-decoration: underline;
+}
+
+.disclaimerNote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid rgba(184, 154, 74, 0.35);
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+  text-align: left;
+}
+
+.disclaimerNoteCompact {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.disclaimerNoteStrong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.emptyState {
+  border-radius: 16px;
+  border: 1px dashed #d1d5db;
+  background: #f8f9fa;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.emptyDesc {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.loadingText {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.accent {
+  color: #b89a4a;
+}
+
+/* My Orders — progress timeline */
+.orderProgressCard {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 20px;
+}
+
+@media (min-width: 640px) {
+  .orderProgressCard {
+    padding: 22px;
+  }
+}
+
+.orderProgressDesktop {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .orderProgressDesktop {
+    display: block;
+  }
+}
+
+.orderProgressMobile {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .orderProgressMobile {
+    display: none;
+  }
+}
+
+.orderProgressRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.orderProgressStep {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orderProgressTrack {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.orderProgressDot {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border-width: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.orderProgressLine {
+  margin: 0 4px;
+  height: 2px;
+  flex: 1 1 auto;
+  border-radius: 9999px;
+}
+
+.orderProgressStepText {
+  margin-top: 12px;
+  width: 100%;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.orderProgressTitle {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #111827;
+}
+
+@media (min-width: 640px) {
+  .orderProgressTitle {
+    font-size: 0.9375rem;
+  }
+}
+
+.orderProgressTitleMuted {
+  color: #9ca3af;
+}
+
+.orderProgressDetail {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #6b7280;
+  word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .orderProgressDetail {
+    font-size: 0.8125rem;
+  }
+}
+
+.orderProgressDetailMuted {
+  color: #9ca3af;
+}
+
+.orderProgressVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.orderProgressVerticalItem {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.orderProgressVerticalRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+}
+
+.orderProgressVerticalStem {
+  width: 2px;
+  flex: 1 1 auto;
+  min-height: 12px;
+  margin-top: 4px;
+  border-radius: 9999px;
+  background: #d1d5db;
+}
+
+.orderProgressVerticalStemComplete {
+  background: #1f2937;
+}
+
+.orderProgressVerticalBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-bottom: 18px;
+}
+
+.orderProgressVerticalItem:last-child .orderProgressVerticalBody {
+  padding-bottom: 0;
+}
+
+/* My Orders — Start New Verification CTA */
+.startNewVerificationBtn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: none;
+  background: #1f2937;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.12);
+}
+
+.startNewVerificationBtn:hover {
+  background: #111827;
+  color: #ffffff;
+}
+
+.startNewVerificationIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 640px) {
+  .startNewVerificationBtn {
+    width: auto;
+  }
+}
+
+/* My Orders — compact legal footer (inline links only) */
+.myOrdersLegalFooterCompact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 12px 0 4px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  .myOrdersLegalFooterCompact {
+    justify-content: flex-start;
+    font-size: 13px;
+  }
+}
+
+.myOrdersLegalFooterItem {
+  display: inline;
+}
+
+.myOrdersLegalFooterSep {
+  color: #9ca3af;
+  user-select: none;
+}
+
+.myOrdersLegalFooterLink {
+  color: #6b7280;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.myOrdersLegalFooterLink:hover {
+  color: #374151;
+  text-decoration: underline;
+}
+
+/* My Orders — pagination */
+.myOrdersPagination {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+@media (min-width: 640px) {
+  .myOrdersPagination {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.myOrdersPaginationSummary {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.myOrdersPaginationControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.myOrdersPaginationBtn {
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.myOrdersPaginationBtn:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.myOrdersPaginationBtn:disabled {
+  cursor: not-allowed;
+  color: #9ca3af;
+  background: #f9fafb;
+}
+
+.myOrdersPaginationPage {
+  min-width: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.myOrdersPaginationPage:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.myOrdersPaginationPageActive {
+  border-color: #1f2937;
+  background: #1f2937;
+  color: #ffffff;
+}
+
+.myOrdersPaginationPageActive:hover {
+  border-color: #1f2937;
+  background: #1f2937;
+}
+
+/* My Orders — list toolbar (summary + filter) */
+.myOrdersListToolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .myOrdersListToolbar {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+.myOrdersListSummary {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* My Orders — status filter dropdown */
+.myOrdersFilterWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .myOrdersFilterWrap {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+  }
+}
+
+.myOrdersFilterLabel {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.myOrdersFilterSelectWrap {
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .myOrdersFilterSelectWrap {
+    flex: 0 0 220px;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .myOrdersFilterSelectWrap {
+    flex: 0 0 250px;
+    width: 250px;
+    min-width: 250px;
+    max-width: 260px;
+  }
+}
+
+.myOrdersFilterSelectWrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #6b7280;
+  border-bottom: 2px solid #6b7280;
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+.myOrdersFilterSelect {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 10px 40px 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #111827;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.myOrdersFilterSelect:hover {
+  border-color: #9ca3af;
+}
+
+.myOrdersFilterSelect:focus {
+  outline: none;
+  border-color: #1f2937;
+  box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.12);
+}
+
+/* Sukoon Trust Score — premium UI (Task 16 / 16C) */
+
+.trustTierBasic,
+.trustTierVerified,
+.trustTierTrusted,
+.trustTierElite {
+  /* tier hooks for ring / pill */
+}
+
+.trustRingWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.trustRingSvg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.trustRingTrack,
+.trustRingProgress {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.trustRingCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.trustRingScore {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.trustRingMax {
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.trustTierPill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.trustTierPillHero {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.trustCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 24px rgba(17, 24, 39, 0.06);
+}
+
+.trustCardHero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.5rem;
+  margin-bottom: 0;
+}
+
+.trustCardHeroText {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.trustCardLabel {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.trustCardSubcopy {
+  margin: 0.5rem 0 18px;
+  padding-bottom: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #6b7280;
+  max-width: 28rem;
+}
+
+.trustCardSection {
+  margin: 16px 0 0;
+  padding: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.trustCardSectionTitle {
+  margin: 16px 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.trustBreakdownGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.trustBreakdownGridCompact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trustBreakdownCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  min-width: 0;
+}
+
+.trustBreakdownCardPass {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.trustBreakdownCardPending {
+  border-color: #f3f4f6;
+  background: #fafafa;
+  opacity: 0.92;
+}
+
+.trustBreakdownCardIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.trustBreakdownCardPass .trustBreakdownCardIcon {
+  color: #111827;
+  background: #e5e7eb;
+}
+
+.trustBreakdownCardPending .trustBreakdownCardIcon {
+  color: #9ca3af;
+  background: #f3f4f6;
+}
+
+.trustBreakdownCardBody {
+  min-width: 0;
+}
+
+.trustBreakdownCardTitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.trustBreakdownCardMeta {
+  margin: 0.2rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.trustBadgesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+@media (min-width: 480px) {
+  .trustBadgesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.trustBadgeCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.trustBadgeCardIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.trustBadgeCardIconSvg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.trustBadgeCardContent {
+  min-width: 0;
+}
+
+.trustBadgeCardTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.trustBadgeCardDesc {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.trustBadgesChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.trustBadgeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.trustCardCompact {
+  padding: 0.75rem 1rem;
+}
+
+.trustCardCompactRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.trustCardCompactMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* Property listing card — subtle trust label (Task 16D final) */
+.propertyCardTrustSlot {
+  display: flex;
+  height: 24px;
+  align-items: center;
+  min-width: 0;
+}
+
+.propertyCardTrustLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 24px;
+  max-height: 24px;
+  padding: 6px 10px;
+  border: 1px solid #111827;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .propertyCardTrustLabel {
+    font-size: 12px;
+  }
+}
+
+.propertyCardTrustIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.trustProfileSection {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ownerTrustSection {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ownerTrustSection .trustCard {
+  margin-bottom: 0;
+}
+
+.ownerTrustHeading {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.publicTrustWrap {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.dropdownTrustSnippet {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  line-height: 1.2;
+}
+
+.dropdownTrustSnippetMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.dropdownTrustSnippetLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Task 18 / 18D — owner-safe tenant reliability (premium explainability) */
+
+.tenantReliabilitySection {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 100%;
+}
+
+.tenantReliabilityCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e8eaed;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 1rem 1.15rem 1.1rem;
+  box-shadow: 0 4px 24px rgba(17, 24, 39, 0.06), 0 1px 3px rgba(17, 24, 39, 0.04);
+}
+
+.tenantReliabilityAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #b8860b 0%, #b8860b 18%, #374151 18%, #374151 100%);
+}
+
+.tenantReliabilityHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.tenantReliabilityHeaderMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tenantReliabilityTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #374151;
+}
+
+.tenantReliabilityBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.tenantReliabilityBadgeHigh {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.tenantReliabilityBadgeMedium {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.tenantReliabilityBadgePending {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.tenantReliabilityTooltipWrap {
+  position: relative;
+}
+
+.tenantReliabilityTooltipTrigger {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.tenantReliabilityTooltipTrigger:hover,
+.tenantReliabilityTooltipTrigger:focus-visible {
+  color: #111827;
+  outline: none;
+}
+
+.tenantReliabilityTooltip {
+  margin: 0.45rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #374151;
+  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.08);
+}
+
+.tenantReliabilityBlock {
+  margin-top: 0.75rem;
+}
+
+.tenantReliabilityBlock + .tenantReliabilityBlock {
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f1f3;
+}
+
+.tenantReliabilityBlockTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #374151;
+}
+
+.tenantReliabilityFactors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.tenantReliabilityFactorItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #111827;
+  font-weight: 500;
+}
+
+.tenantReliabilityFactorIcon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  color: #047857;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tenantReliabilityPrivacyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.tenantReliabilityPrivacyItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.tenantReliabilityPrivacyIcon {
+  flex-shrink: 0;
+  width: 1rem;
+  color: #9ca3af;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 639px) {
+  .tenantReliabilityCard {
+    padding: 0.9rem 1rem 1rem;
+    border-radius: 14px;
+  }
+
+  .tenantReliabilityHeaderMain {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tenantReliabilityTooltip {
+    font-size: 13px;
+  }
+
+  .trustCard {
+    padding: 1rem 1rem 0.875rem;
+  }
+
+  .trustCardHero {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    text-align: center;
+  }
+
+  .trustCardHeroText {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+    text-align: left;
+  }
+
+  .trustCardSubcopy {
+    margin-top: 0.375rem;
+    margin-bottom: 0;
+    max-width: none;
+  }
+
+  .trustCardSection {
+    margin-top: 16px;
+  }
+
+  .trustCardSectionTitle {
+    margin-top: 12px;
+    margin-bottom: 0.5rem;
+  }
+
+  .trustBreakdownGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .trustBadgesGrid {
+    grid-template-columns: 1fr;
+  }
+}

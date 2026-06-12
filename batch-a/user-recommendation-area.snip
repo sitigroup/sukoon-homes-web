@@ -1,0 +1,13 @@
+            if (! empty($user_interest->area_id) || ! empty($user_interest->sub_area_id)) {
+                if (class_exists(\App\Plugins\AreaListing\Services\AreaListingService::class)) {
+                    $areaRequest = Request::create('/', 'GET', array_filter([
+                        'area_id' => $user_interest->area_id,
+                        'sub_area_id' => $user_interest->sub_area_id,
+                        'city_id' => $user_interest->city_id,
+                    ]));
+                    $property = \App\Plugins\AreaListing\Services\AreaListingService::applyPropertyFilters($property, $areaRequest);
+                }
+            } elseif ($user_interest->city != '') {
+                $city = $user_interest->city;
+                $property = $property->where('city', $city);
+            }

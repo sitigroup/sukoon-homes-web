@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Area Wise Plugin Changelog v2.0.0</title>
+<style>
+body { font-family: DejaVu Sans, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.45; margin: 28px; }
+h1 { font-size: 22pt; color: #0f4c5c; border-bottom: 3px solid #0f4c5c; padding-bottom: 8px; margin-top: 0; }
+h2 { font-size: 14pt; color: #1b6b7a; margin-top: 22px; page-break-after: avoid; }
+h3 { font-size: 12pt; color: #333; margin-top: 14px; }
+.meta { background: #f0f7f9; padding: 12px 16px; border-left: 4px solid #1b6b7a; margin: 16px 0; }
+.meta p { margin: 4px 0; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+th { background: #e8f4f6; }
+ul { margin: 8px 0; padding-left: 22px; }
+li { margin: 4px 0; }
+code { background: #f4f4f4; padding: 1px 4px; font-size: 9pt; }
+.footer { margin-top: 30px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Area Wise Plugin — Changelog</h1>
+
+<div class="meta">
+<p><strong>Product:</strong> Sukoon Homes — Area Listing (Area Wise)</p>
+<p><strong>Version:</strong> 2.0.0</p>
+<p><strong>Release date:</strong> 21 May 2026</p>
+<p><strong>Environments:</strong> admin-homes.sukoon.group · homes.sukoon.group</p>
+</div>
+
+<h2>Summary</h2>
+<p>Version 2.0.0 completes the Area Wise location system for property and project listings: admin map/GPS workflows, agent permissions, customer admin controls, and frontend area filters. This release fixes map pin behaviour, prevents random area assignment on GPS, and adds server-side name matching when the map pin moves.</p>
+
+<h2>1. Admin Property &amp; Project — Area Wise Location</h2>
+
+<h3>1.1 Location fields</h3>
+<ul>
+<li>Area Wise Location block on property and project create/edit pages.</li>
+<li>Fields: State, City (synced from main form), Area, Sub Area, manual customer address.</li>
+<li>Hidden internal state_id / city_id selects (no Select2 on hidden fields).</li>
+<li>Detected area/sub-area hidden fields for save when no DB match exists.</li>
+<li>area_listing_admin_save=1 on admin forms for auto-create rules.</li>
+<li>Get Current Location: browser GPS + Google reverse geocode (not raw coordinates for city/address).</li>
+</ul>
+
+<h3>1.2 Map integration (maps-helper.js)</h3>
+<ul>
+<li>Single backend map instance (initBackendPlacesMap).</li>
+<li>Draggable marker; drag end calls server geocode API with Google client fallback.</li>
+<li>City search via backend places list — not legacy Autocomplete on property pages.</li>
+<li>Pin move updates address, city, state, country, latitude, longitude.</li>
+<li>Pin move does not keep city suggestion dropdown open.</li>
+<li>Advanced Marker: dragend and gmp-dragend supported.</li>
+</ul>
+
+<h3>1.3 Legacy map fix (custom.js)</h3>
+<ul>
+<li>initMap() defers to initBackendPlacesMap when backendPlacesMapOptions is set.</li>
+<li>Fixes duplicate map, stuck city dropdown, and lat/lng-only updates on pin drag.</li>
+</ul>
+
+<h3>1.4 Script load order</h3>
+<ul>
+<li>initMap and backendPlacesMapOptions defined before Google Maps API script.</li>
+<li>Cache-bust maps-helper.js after updates.</li>
+</ul>
+
+<h2>2. GPS &amp; Area Matching</h2>
+<table>
+<tr><th>Behaviour</th><th>GPS / Get Current Location</th><th>Map pin / place search</th></tr>
+<tr><td>City &amp; address</td><td>Google reverse geocode</td><td>Google reverse geocode</td></tr>
+<tr><td>Area auto-select</td><td>Exact name in dropdown</td><td>POST resolve-coordinates + dropdown</td></tr>
+<tr><td>Random nearest by GPS coords</td><td>Removed</td><td>Removed</td></tr>
+<tr><td>Select2 during apply</td><td>Blocked (GPS lock)</td><td>Blocked (map fill silent)</td></tr>
+<tr><td>Old area on move</td><td>Cleared, re-matched</td><td>Cleared, re-matched</td></tr>
+</table>
+
+<h3>2.1 resolve-coordinates</h3>
+<ul>
+<li>Route: POST /area-listing/resolve-coordinates</li>
+<li>Name-only match from Google location_components (no distance-based nearest area).</li>
+<li>Returns area_id, sub_area_id, and detected names when matched in DB for city.</li>
+</ul>
+
+<h3>2.2 Pin move apply flow</h3>
+<ul>
+<li>Clears Select2 area/sub-area display when location changes.</li>
+<li>Parses area name from formatted address when Google components omit sublocality.</li>
+<li>Falls back to client dropdown name match if server returns no match.</li>
+</ul>
+
+<h2>3. Area Creation Rules</h2>
+<table>
+<tr><th>User</th><th>Auto-create on save</th></tr>
+<tr><td>Admin</td><td>Yes</td></tr>
+<tr><td>Agent with can_manage_area_listing = 1</td><td>Yes</td></tr>
+<tr><td>Other agents</td><td>No — admin approval via suggestions</td></tr>
+</table>
+<ul>
+<li>GET /api/area-listing/permissions</li>
+<li>POST areas/sub-areas — 403 for non-privileged; suggest-area / suggest-sub-area for others</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2>4. Per-Agent Area Wise Permission</h2>
+<ul>
+<li>Database: customers.can_manage_area_listing (boolean)</li>
+<li>Customer list: Area Wise column (Allowed / Not Allowed for agents)</li>
+<li>Customer edit: Agent Profile toggle + Save Area Wise Setting (separate from main save)</li>
+<li>PUT customer/{id}/area-listing-permission</li>
+<li>Fix: Edit button for all customers with permission; fix false “User already exists” on permission-only save</li>
+<li>Profile API and AreaSubAreaSelector: Add vs Suggest UI by permission</li>
+</ul>
+
+<h2>5. Area Listing Admin Plugin (Core)</h2>
+<ul>
+<li>States, cities, areas, sub-areas CRUD</li>
+<li>Merge with audit log; pending suggestions approval</li>
+<li>CSV import with dry-run; archived areas; usage counts on properties/projects</li>
+<li>AreaListingService, AdminController, ApiController fixes in 2.0.0</li>
+</ul>
+
+<h2>6. Frontend — Personalized Feeds</h2>
+<ul>
+<li>AreaListingFilter on home/search</li>
+<li>Public: Sub-area, Area, City, State — full address/map private</li>
+</ul>
+
+<h2>7. Key Files (Deploy Reference)</h2>
+<table>
+<tr><th>Path (admin-homes)</th><th>Purpose</th></tr>
+<tr><td>app/Plugins/AreaListing/views/admin/partials/listing-location-fields.blade.php</td><td>Map, GPS, area sync</td></tr>
+<tr><td>public/assets/js/maps-helper.js</td><td>Backend map &amp; geocode</td></tr>
+<tr><td>public/assets/js/custom/custom.js</td><td>initMap guard</td></tr>
+<tr><td>resources/views/property/*.blade.php</td><td>Map init order</td></tr>
+<tr><td>app/Plugins/AreaListing/Services/AreaListingService.php</td><td>Rules &amp; resolve</td></tr>
+<tr><td>app/Http/Controllers/CustomersController.php</td><td>Agent permission UI</td></tr>
+<tr><td>homes: src/plugins/area-listing/*</td><td>Agent &amp; filter UI</td></tr>
+</table>
+
+<h2>8. Deployment</h2>
+<ul>
+<li>php artisan migrate (can_manage_area_listing if needed)</li>
+<li>php artisan optimize:clear && php artisan view:clear</li>
+<li>homes: npm run build && pm2 restart</li>
+<li>Hard refresh admin property edit after deploy</li>
+</ul>
+
+<h2>9. Known Limitations</h2>
+<ul>
+<li>Area auto-select needs matching name in DB for that city, or staff pick/add once.</li>
+<li>Separate “Client Address” field may not update from map pin.</li>
+<li>Low GPS accuracy: warning shown; drag pin if city wrong.</li>
+</ul>
+
+<h2>10. Version History</h2>
+<table>
+<tr><th>Version</th><th>Date</th><th>Notes</th></tr>
+<tr><td>1.0.0</td><td>Earlier</td><td>Initial plugin, CRUD, location tables</td></tr>
+<tr><td>1.5.0</td><td>May 2026</td><td>Personalized feeds, basic map fields</td></tr>
+<tr><td><strong>2.0.0</strong></td><td><strong>21 May 2026</strong></td><td>GPS/map fixes, permissions, resolve-coordinates, legacy map guard</td></tr>
+</table>
+
+<div class="footer">
+Sukoon Group — Area Wise Plugin Changelog v2.0.0 — Generated 21 May 2026
+</div>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+{
+  "project_info": {
+    "project_number": "168614703336",
+    "project_id": "sukoon-groups",
+    "storage_bucket": "sukoon-groups.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168614703336:android:95b41d2b7d01a836d7d95d",
+        "android_client_info": {
+          "package_name": "homes.sukoon.group"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168614703336-59l0dbq1s8h9tq7vlg793jrftkl01nvk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "homes.sukoon.group",
+            "certificate_hash": "804e24fcc7e396d9c66fd7c528fc23711cecb2ac"
+          }
+        },
+        {
+          "client_id": "168614703336-9l0rob229mokul2jdqrmmpper3n5q98d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "homes.sukoon.group",
+            "certificate_hash": "52281ac217dca43005e0ba3f91e72c42fbf28cbc"
+          }
+        },
+        {
+          "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD1bFsOfmtu1h79eQASoj1zYe9RCcbnIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "168614703336-1h58mm39oq6m1urchdbo1j0nuqi9k11h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "sathi.sukoon.group"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168614703336:android:cea679f08b5862f4d7d95d",
+        "android_client_info": {
+          "package_name": "sathi.sukoon.group"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168614703336-66apvvudm7ggvplq5a5t4gl657534o1l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sathi.sukoon.group",
+            "certificate_hash": "5cae32979e86eba1f9cbea10e3eee3f764182bbd"
+          }
+        },
+        {
+          "client_id": "168614703336-cq9flbmjnk5mkr6p61o2hrqc8gkbar2m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sathi.sukoon.group",
+            "certificate_hash": "804e24fcc7e396d9c66fd7c528fc23711cecb2ac"
+          }
+        },
+        {
+          "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD1bFsOfmtu1h79eQASoj1zYe9RCcbnIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "168614703336-1h58mm39oq6m1urchdbo1j0nuqi9k11h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "sathi.sukoon.group"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168614703336:android:660184ceb86ef8d9d7d95d",
+        "android_client_info": {
+          "package_name": "seva.sukoon.group"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168614703336-g56hmd4n9kerencgn9agc94kbkvesh5s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "seva.sukoon.group",
+            "certificate_hash": "9c1226e60152f3ea3910ac2af50cd4d5ca23db3f"
+          }
+        },
+        {
+          "client_id": "168614703336-v21pajh7i932c4g08b8c35ippn3sam25.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "seva.sukoon.group",
+            "certificate_hash": "804e24fcc7e396d9c66fd7c528fc23711cecb2ac"
+          }
+        },
+        {
+          "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD1bFsOfmtu1h79eQASoj1zYe9RCcbnIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168614703336-acp54v0me0eatl52mhr8hv0ukkhv5ekt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "168614703336-1h58mm39oq6m1urchdbo1j0nuqi9k11h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "sathi.sukoon.group"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

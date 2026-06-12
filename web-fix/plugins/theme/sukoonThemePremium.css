@@ -1,0 +1,77 @@
+/**
+ * Sukoon Theme — premium global CSS (loaded via applyThemeVariables or _app patch).
+ * Semantic contrast tokens only — no hardcoded #fff / #000 text.
+ */
+
+.sukoon-themed {
+  font-family: var(--sukoon-font-family, Manrope, system-ui, sans-serif);
+  color: var(--sukoon-text-primary, #111827);
+  background-color: var(--sukoon-section, #F9FAFB);
+}
+
+.sukoon-card {
+  background: var(--sukoon-bg-primary, var(--sukoon-card, #ffffff));
+  color: var(--sukoon-text-primary, #111827);
+  border: 1px solid var(--sukoon-border, #e5e7eb);
+  border-radius: var(--sukoon-radius, 16px);
+  box-shadow: var(--sukoon-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+}
+
+.sukoon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--sukoon-radius, 16px);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background: var(--sukoon-button, #111827);
+  color: var(--sukoon-button-text, var(--sukoon-text-on-dark, #ffffff));
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sukoon-btn:hover {
+  background: var(--sukoon-hover, #000000);
+  color: var(--sukoon-button-hover-text, var(--sukoon-text-on-dark, #ffffff));
+}
+
+.sukoon-btn--secondary {
+  background: var(--sukoon-bg-primary, #ffffff);
+  color: var(--sukoon-text-primary, #111827);
+  border: 1px solid var(--sukoon-border, #e5e7eb);
+}
+
+.sukoon-link {
+  color: var(--sukoon-link-on-light, var(--sukoon-link, #111827));
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sukoon-link--on-dark {
+  color: var(--sukoon-link-on-dark, var(--sukoon-text-on-dark, #ffffff));
+}
+
+.sukoon-section {
+  background: var(--sukoon-section, #f9fafb);
+  color: var(--sukoon-text-primary, #111827);
+}
+
+.sukoon-surface-dark {
+  background: var(--sukoon-bg-dark, #111827);
+  color: var(--sukoon-text-on-dark, #ffffff);
+}
+
+.sukoon-muted {
+  color: var(--sukoon-text-secondary, #6b7280);
+  font-size: 0.9375rem;
+}
+
+.sukoon-accent {
+  color: var(--sukoon-text-primary, #111827);
+}
+
+@media (max-width: 768px) {
+  .sukoon-card {
+    border-radius: calc(var(--sukoon-radius, 16px) - 2px);
+  }
+}

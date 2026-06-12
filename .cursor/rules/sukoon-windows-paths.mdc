@@ -1,0 +1,36 @@
+---
+description: Canonical Windows paths after PC rename (This PC → Sukoon). Use these in all commands, docs, and config edits.
+alwaysApply: true
+---
+
+# Sukoon Windows paths (do not use "This PC")
+
+The Windows user profile was renamed. **Never** use `C:\Users\This PC\` — that folder does not exist.
+
+## Canonical paths
+
+| What | Path |
+|------|------|
+| **Workspace / repo root** | `C:\Users\Sukoon\cursr` |
+| **Flutter app** | `C:\Users\Sukoon\cursr\ebroker-sukoon-app` |
+| **Build copy (optional)** | `G:\develop\ebroker-sukoon-app` |
+| **Flutter SDK** | `G:\develop\flutter` |
+| **Android SDK** | `G:\develop\Android\Sdk` |
+| **JDK (Android Studio)** | `G:\develop\Android\Android Studio\jbr` |
+| **Pub cache** | `G:\develop\pub-cache` |
+| **ADB** | `G:\develop\Android\Sdk\platform-tools\adb.exe` |
+
+## Replacements when fixing old configs
+
+- `C:\Users\This PC\cursr` → `C:\Users\Sukoon\cursr`
+- `C:\Users\This PC\flutter` → `G:\develop\flutter`
+- `H:\develop\` → `G:\develop\` (drive moved H → G)
+
+## Android app IDs (unchanged)
+
+- `applicationId`: `homes.sukoon.group`
+- `namespace` / `MainActivity`: `com.ebroker.wrteam`
+
+## Terminal / Cursor
+
+Open folder: `C:\Users\Sukoon\cursr` or `cursr.code-workspace` — not `This PC\cursr`.
