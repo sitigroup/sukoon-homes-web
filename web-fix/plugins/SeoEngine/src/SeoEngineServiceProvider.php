@@ -26,6 +26,7 @@ class SeoEngineServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SeoEngineSettingsService::class);
         $this->app->singleton(SeoEngineRedirectService::class);
+        $this->app->singleton(\App\Plugins\SeoEngine\Services\SeoEngineRentSitemapService::class);
     }
 
     public function boot(): void

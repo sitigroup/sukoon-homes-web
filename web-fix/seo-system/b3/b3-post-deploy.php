@@ -30,6 +30,11 @@ file_put_contents($keyFile, $key);
 
 Artisan::call('seo-engine:generate-pages');
 Artisan::call('seo-engine:build-sitemaps');
+@chown('/www/wwwroot/admin-homes/storage/app/seo-engine', 'www');
+@chgrp('/www/wwwroot/admin-homes/storage/app/seo-engine', 'www');
+@chmod('/www/wwwroot/admin-homes/storage/app/seo-engine', 0775);
+@chown('/www/wwwroot/admin-homes/storage/app/seo-engine/rent-pages.json', 'www');
+@chgrp('/www/wwwroot/admin-homes/storage/app/seo-engine/rent-pages.json', 'www');
 
 $budgetSample = SeoEnginePage::query()
     ->where('page_type', 'rent_combo_budget')

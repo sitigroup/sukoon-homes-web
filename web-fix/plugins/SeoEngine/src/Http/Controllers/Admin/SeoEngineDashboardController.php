@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Plugins\SeoEngine\Models\SeoEnginePage;
 use App\Plugins\SeoEngine\Models\SeoEngineRedirect;
 use App\Plugins\SeoEngine\Services\SeoEnginePageGeneratorService;
+use App\Plugins\SeoEngine\Services\SeoEngineRentSitemapService;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
@@ -53,13 +53,15 @@ class SeoEngineDashboardController extends Controller
         return view('seo-engine::admin.seo-engine.dashboard', compact('stats', 'cron'));
     }
 
-    public function regeneratePages(SeoEnginePageGeneratorService $generator): RedirectResponse
-    {
+    public function regeneratePages(
+        SeoEnginePageGeneratorService $generator,
+        SeoEngineRentSitemapService $sitemap
+    ): RedirectResponse {
         $this->denyUnlessDashboard();
 
         try {
             $generator->generate();
-            Artisan::call('seo-engine:build-sitemaps');
+            $sitemap->export();
         } catch (\Throwable $e) {
             report($e);
 
@@ -69,10 +71,17 @@ class SeoEngineDashboardController extends Controller
         return back()->with('success', __('seo-engine::seo_engine.regenerate_pages_done'));
     }
 
-    public function regenerateSitemaps(): RedirectResponse
+    public function regenerateSitemaps(SeoEngineRentSitemapService $sitemap): RedirectResponse
     {
         $this->denyUnlessDashboard();
-        \Illuminate\Support\Facades\Artisan::call('seo-engine:build-sitemaps');
+
+        try {
+            $sitemap->export();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withErrors(['regenerate' => $e->getMessage()]);
+        }
 
         return back()->with('success', __('seo-engine::seo_engine.regenerate_sitemaps_done'));
     }
