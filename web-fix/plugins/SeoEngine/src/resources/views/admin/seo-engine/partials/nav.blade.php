@@ -14,4 +14,11 @@
             </a>
         </li>
     @endif
+    @if(function_exists('has_permissions') && has_permissions('redirects', 'seo_engine'))
+        <li class="nav-item">
+            <a class="nav-link {{ $active === 'redirects' ? 'active' : '' }}" href="{{ route('seo-engine.redirects.index') }}">
+                {{ __('seo-engine::seo_engine.nav_redirects') }}
+            </a>
+        </li>
+    @endif
 </ul>

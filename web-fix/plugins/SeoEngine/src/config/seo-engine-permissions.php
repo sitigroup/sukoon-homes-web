@@ -5,5 +5,6 @@ return [
     'roles' => [
         'dashboard' => 'View SEO Engine dashboard',
         'settings' => 'Manage SEO Engine global settings',
+        'redirects' => 'Manage SEO Engine redirects',
     ],
 ];

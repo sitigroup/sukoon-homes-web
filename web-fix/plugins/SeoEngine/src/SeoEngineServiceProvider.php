@@ -4,13 +4,24 @@ namespace App\Plugins\SeoEngine;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use App\Plugins\SeoEngine\Observers\ArticleSlugObserver;
+use App\Plugins\SeoEngine\Observers\ProjectSlugObserver;
+use App\Plugins\SeoEngine\Observers\PropertySlugObserver;
+use App\Plugins\SeoEngine\Services\SeoEngineRedirectService;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
 
 class SeoEngineServiceProvider extends ServiceProvider
 {
+    private array $slugObservers = [
+        \App\Models\Property::class => PropertySlugObserver::class,
+        \App\Models\Projects::class => ProjectSlugObserver::class,
+        \App\Models\Article::class => ArticleSlugObserver::class,
+    ];
+
     public function register(): void
     {
         $this->app->singleton(SeoEngineSettingsService::class);
+        $this->app->singleton(SeoEngineRedirectService::class);
     }
 
     public function boot(): void
@@ -29,6 +40,12 @@ class SeoEngineServiceProvider extends ServiceProvider
 
         Route::middleware('web')->group($base . '/routes/web.php');
         Route::prefix('api')->middleware('api')->group($base . '/routes/api.php');
+
+        foreach ($this->slugObservers as $model => $observer) {
+            if (class_exists($model)) {
+                $model::observe($observer);
+            }
+        }
 
         // Scheduled commands (seo-engine:generate-pages, etc.) registered in TASK B3.
     }
