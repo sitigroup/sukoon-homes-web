@@ -1,6 +1,7 @@
 <?php
 
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineDashboardController;
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEnginePagesController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineRedirectsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineSettingsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineTemplatesController;
@@ -29,4 +30,10 @@ Route::prefix('seo-engine')
 
         Route::get('/templates', [SeoEngineTemplatesController::class, 'index'])->name('templates.index');
         Route::post('/templates', [SeoEngineTemplatesController::class, 'store'])->name('templates.store');
+
+        Route::get('/pages', [SeoEnginePagesController::class, 'index'])->name('pages.index');
+        Route::get('/pages/export', [SeoEnginePagesController::class, 'export'])->name('pages.export');
+        Route::post('/pages/bulk', [SeoEnginePagesController::class, 'bulk'])->name('pages.bulk');
+        Route::get('/pages/{page}/edit', [SeoEnginePagesController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{page}', [SeoEnginePagesController::class, 'update'])->name('pages.update');
     });

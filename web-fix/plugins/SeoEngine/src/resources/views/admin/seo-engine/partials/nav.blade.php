@@ -28,4 +28,11 @@
             </a>
         </li>
     @endif
+    @if(function_exists('has_permissions') && has_permissions('pages', 'seo_engine'))
+        <li class="nav-item">
+            <a class="nav-link {{ $active === 'pages' ? 'active' : '' }}" href="{{ route('seo-engine.pages.index') }}">
+                {{ __('seo-engine::seo_engine.nav_pages') }}
+            </a>
+        </li>
+    @endif
 </ul>

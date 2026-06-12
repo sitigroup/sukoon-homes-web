@@ -121,6 +121,8 @@ class SeoEnginePageGeneratorService
 
         $this->settings->set('cron_last_generate_pages_at', now()->toIso8601String(), 'cron');
 
+        app(SeoEnginePageDataService::class)->bustAllPageCaches();
+
         return $stats;
     }
 

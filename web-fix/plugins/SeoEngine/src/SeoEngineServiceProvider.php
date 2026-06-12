@@ -10,6 +10,9 @@ use App\Plugins\SeoEngine\Observers\ArticleSlugObserver;
 use App\Plugins\SeoEngine\Observers\ProjectSlugObserver;
 use App\Plugins\SeoEngine\Observers\PropertySeoPageObserver;
 use App\Plugins\SeoEngine\Observers\PropertySlugObserver;
+use App\Plugins\SeoEngine\Services\SeoEnginePageDataService;
+use App\Plugins\SeoEngine\Services\SeoEnginePageGeneratorService;
+use App\Plugins\SeoEngine\Services\SeoEnginePageTouchService;
 use App\Plugins\SeoEngine\Services\SeoEngineRedirectService;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
 use Illuminate\Console\Scheduling\Schedule;
@@ -27,6 +30,8 @@ class SeoEngineServiceProvider extends ServiceProvider
         $this->app->singleton(SeoEngineSettingsService::class);
         $this->app->singleton(SeoEngineRedirectService::class);
         $this->app->singleton(\App\Plugins\SeoEngine\Services\SeoEngineRentSitemapService::class);
+        $this->app->singleton(SeoEnginePageDataService::class);
+        $this->app->singleton(SeoEnginePageTouchService::class);
     }
 
     public function boot(): void
