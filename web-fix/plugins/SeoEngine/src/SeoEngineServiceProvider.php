@@ -5,8 +5,10 @@ namespace App\Plugins\SeoEngine;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use App\Plugins\SeoEngine\Console\BuildSitemapsCommand;
+use App\Plugins\SeoEngine\Console\Digest404Command;
 use App\Plugins\SeoEngine\Console\GenerateContentCommand;
 use App\Plugins\SeoEngine\Console\GeneratePagesCommand;
+use App\Plugins\SeoEngine\Console\SeedQaCommand;
 use App\Plugins\SeoEngine\Observers\ArticleSlugObserver;
 use App\Plugins\SeoEngine\Observers\ProjectSlugObserver;
 use App\Plugins\SeoEngine\Observers\PropertySeoPageObserver;
@@ -63,12 +65,13 @@ class SeoEngineServiceProvider extends ServiceProvider
             \App\Models\Property::observe(PropertySeoPageObserver::class);
         }
 
-        $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class, GenerateContentCommand::class]);
+        $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class, GenerateContentCommand::class, SeedQaCommand::class, Digest404Command::class]);
 
         if ($this->app->runningInConsole()) {
             $this->app->booted(function () {
                 $schedule = $this->app->make(Schedule::class);
                 $schedule->command('seo-engine:generate-pages')->dailyAt('02:00')->withoutOverlapping();
+                $schedule->command('seo-engine:digest-404')->weeklyOn(1, '06:30')->withoutOverlapping();
             });
         }
     }

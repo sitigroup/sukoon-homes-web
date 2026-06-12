@@ -508,4 +508,69 @@ php artisan seo-engine:build-sitemaps
 
 ---
 
-**⏸ PAUSE — Please review this report before TASK B6.**
+## TASK B6 — AI content engine ✅ CLOSED
+
+### Delivered
+
+1. **Artisan** `seo-engine:generate-content` — Gemini (direct API, 2048 tokens) + Claude provider; rate limit, retry/backoff, failure log.
+2. **Prompt contract** — injected facts only; verifiable locality language; no listing counts in prose; area-scoped rent on 0-listing combos; ₹ symbol (never INR); `-ise` Indian English; five rotating opening patterns; min-listings gate (default 1).
+3. **Admin** — AI settings (provider, rate limit, prompt template, min listings); **Content review** queue (approve/regenerate/lock).
+4. **Storage** — `intro_html`, `faq_json`, `content_generated_at`, `content_review_status`; auto-regenerate on >15% listing drift (skip locked).
+
+### Bulk generation (2026-06-13)
+
+| Metric | Value |
+|--------|------:|
+| Pages with `listing_count >= 1` | 10 |
+| AI content generated (total) | 10 |
+| Approved (sample review) | 4 |
+| Pending review (bulk run) | 6 |
+| Template fallback (0-listing combos) | 61 |
+| Failures in log (earlier debug runs) | 6 |
+| Bulk run failures (final) | 0 |
+
+**API cost (estimated):** Gemini `usageMetadata` now captured. For ~10 pages at ~2,000–2,500 tokens/page (prompt + completion), total ≈ **20k–25k tokens** → **~$0.002–0.004 USD** at gemini-2.5-flash-lite list rates ($0.075/1M input, $0.30/1M output). Not billed per-page in admin UI; use `tokens_total` / `est_cost_usd` from artisan output on future runs.
+
+### VERIFY checklist
+
+- [x] 5 test pages reviewed and **approved** (4 AI + 1 template fallback on `/rent/barmer/kailash-puri/1bhk/`)
+- [x] Locked page untouched by bulk; failures logged not crashed
+- [x] Min-listings gate: bulk skips 0-listing pages
+
+### Commits
+
+- `seo: task B6 — AI content engine, prompt rules, min-listings gate`
+
+---
+
+## TASK B7 — Q&A Hub + monitoring 🚧 IN PROGRESS
+
+### Delivered (staging)
+
+| Layer | Files |
+|-------|--------|
+| **Plugin** | `SeoEngineQaPage` model, admin CRUD (`/seo-engine/qa`), API (`/api/seo-engine/qa-page`, `/qa-sitemap`), `SeoEngineQaSitemapService`, `SeoEngineQaSeedService` + `seo-engine:seed-qa`, `seo-engine:digest-404` (weekly schedule) |
+| **Dashboard** | Q&A draft count, 404 hits (7d), IndexNow log, 404 digest widget |
+| **Web** | `pages/guides/[category]/[slug]/index.jsx`, `GuidePageView.jsx`, `guidePageApi.js`, `jsonld-guide.js` (FAQPage + Article) |
+| **Sitemap** | `qa-guides.json` export; `sitemap-generator.js` child `qa-guides.xml` (published only) |
+
+### Seed data
+
+- **25 DRAFT** Q&A rows inserted on server — Rajasthan/Barmer rental topics (stamp duty, registration, e-stamp, police verification, deposits, bachelor/family renting, notice periods, Barmer rent ranges, etc.).
+- **0 published** — human must finalise and publish before guides appear on web/sitemap.
+
+### VERIFY checklist
+
+- [ ] Publish one guide → renders answer box + schema at `/guides/{category}/{slug}/`
+- [ ] Published guide in `qa-guides.xml` after `npm run build` + PM2 restart
+- [ ] 404 digest + dashboard widgets live (404 digest empty until rent 404 traffic)
+- [ ] **FINAL:** full report review
+
+### Deploy notes
+
+- Plugin deployed via tar to `app/Plugins/SeoEngine/`
+- Web guides route copied; **`npm run build` + PM2 restart required** on `homes.sukoon.group` for guides route + sitemap child
+
+---
+
+**⏸ FINAL PAUSE — Please review this report after TASK B7 verify (publish one guide + web build).**

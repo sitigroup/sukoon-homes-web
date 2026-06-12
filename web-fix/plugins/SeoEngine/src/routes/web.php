@@ -3,6 +3,7 @@
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineContentReviewController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineDashboardController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEnginePagesController;
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineQaPagesController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineRedirectsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineSettingsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineTemplatesController;
@@ -42,4 +43,11 @@ Route::prefix('seo-engine')
         Route::post('/content-review/{page}/approve', [SeoEngineContentReviewController::class, 'approve'])->name('content.approve');
         Route::post('/content-review/{page}/regenerate', [SeoEngineContentReviewController::class, 'regenerate'])->name('content.regenerate');
         Route::post('/content-review/{page}/lock', [SeoEngineContentReviewController::class, 'lock'])->name('content.lock');
+
+        Route::get('/qa', [SeoEngineQaPagesController::class, 'index'])->name('qa.index');
+        Route::get('/qa/create', [SeoEngineQaPagesController::class, 'create'])->name('qa.create');
+        Route::post('/qa', [SeoEngineQaPagesController::class, 'store'])->name('qa.store');
+        Route::get('/qa/{qaPage}/edit', [SeoEngineQaPagesController::class, 'edit'])->name('qa.edit');
+        Route::put('/qa/{qaPage}', [SeoEngineQaPagesController::class, 'update'])->name('qa.update');
+        Route::delete('/qa/{qaPage}', [SeoEngineQaPagesController::class, 'destroy'])->name('qa.destroy');
     });

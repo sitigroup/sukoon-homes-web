@@ -35,6 +35,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link {{ $active === 'qa' ? 'active' : '' }}" href="{{ route('seo-engine.qa.index') }}">
+                {{ __('seo-engine::seo_engine.nav_qa') }}
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link {{ $active === 'pages' ? 'active' : '' }}" href="{{ route('seo-engine.pages.index') }}">
                 {{ __('seo-engine::seo_engine.nav_pages') }}
             </a>
