@@ -54,12 +54,13 @@ if (process.env.NEXT_PUBLIC_SEO === 'true') {
       rentItemList(payload.listings, page.title, lang),
       rentFaqPage(page.faq_json)
     );
-    const popularPaths = await fetchPopularRentPaths(10);
+    const popularPaths = (await fetchPopularRentPaths(10)).filter((p) => p.path !== path);
 
     return {
       props: {
         payload,
         popularPaths,
+        currentPath: path,
         lang,
         structuredData,
         robots,

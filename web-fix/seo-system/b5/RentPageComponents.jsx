@@ -11,7 +11,7 @@ export default function RentListingCard({ listing, lang = 'en' }) {
   return (
     <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
       <h3 className="mb-1 text-lg font-semibold text-gray-900">
-        <CustomLink href={`/property-details/${listing.slug_id}/?lang=${lang}`}>{listing.title}</CustomLink>
+        <CustomLink href={`/property-details/${listing.slug_id}/`}>{listing.title}</CustomLink>
       </h3>
       <p className="text-sm text-gray-600">{listing.city}{listing.state ? `, ${listing.state}` : ''}</p>
       {listing.price ? (
@@ -30,7 +30,7 @@ export function RentLinkBlock({ title, links = [], lang = 'en' }) {
         {links.map((link) => (
           <li key={link.path}>
             <CustomLink
-              href={`${link.path}?lang=${lang}`}
+              href={link.path}
               className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-sm hover:border-primary hover:text-primary"
             >
               {link.title || link.path} ({link.listing_count})
@@ -60,15 +60,16 @@ export function RentFaqBlock({ faqJson = [] }) {
   );
 }
 
-export function PopularSearches({ paths = [], lang = 'en' }) {
-  if (!paths?.length) return null;
+export function PopularSearches({ paths = [], currentPath = '', lang = 'en' }) {
+  const filtered = paths.filter((p) => p.path && p.path !== currentPath);
+  if (!filtered.length) return null;
   return (
     <footer className="mt-12 border-t border-gray-200 pt-8">
       <h2 className="mb-3 text-lg font-semibold">Popular rental searches</h2>
       <ul className="flex flex-wrap gap-2">
-        {paths.map((p) => (
+        {filtered.map((p) => (
           <li key={p.path}>
-            <CustomLink href={`${p.path}?lang=${lang}`} className="text-sm text-primary underline">
+            <CustomLink href={p.path} className="text-sm text-primary underline">
               {p.title || p.path}
             </CustomLink>
           </li>

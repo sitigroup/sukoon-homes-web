@@ -407,7 +407,37 @@ php artisan seo-engine:build-sitemaps
 
 ## TASK B5 — /rent/ frontend, dynamic robots/llms, bot-files API
 
-**Status:** ✅ COMPLETE (2026-06-13)
+**Status:** ✅ CLOSED (2026-06-13)
+
+### B5 review fixes (frontend + generator root cause)
+
+| # | Fix | Result |
+|---|-----|--------|
+| 1 | **`?lang=en?lang=en` double param** | ✅ Removed manual `?lang=` from all `CustomLink` hrefs in rent components — `CustomLink` already appends locale |
+| 2 | **PopularSearches includes current page** | ✅ Filtered in GSSP + `PopularSearches` component (`currentPath` exclusion) |
+| 3 | **Listing cards show stale "Baldev Nagar Barmer"** | ✅ `SeoEnginePageDataService` uses `COALESCE(area_listing_cities.name, propertys.city)` from `area_listing_property_locations` join |
+| 4 | **Junk path recreation root cause** | ✅ See below — **not** property free-text; **active Area Wise city row id 28** |
+| 5 | **Generator hardening** | ✅ Skip composite-slug orphan cities + require property-location assignments; prune stale `/rent/` registry rows each run |
+| 6 | **Double-run verify (no purge)** | ✅ Two consecutive `seo-engine:generate-pages` → **71 pages**, **0 junk**, stable on run 2 |
+
+### Junk recreation — root cause (precise)
+
+| Source | Finding |
+|--------|---------|
+| **`area_listing_cities`** | City **id 28** `baldev-nagar-barmer` still **`status=1`** — generator iterates all active cities |
+| **`area_listing_areas`** | Area **id 72** `raj-colony` still active under city 28 (0 property assignments) |
+| **`area_listing_property_locations`** | All 4 active rent properties assigned to **city_id=22 (Barmer)** — **none** to city 28 |
+| **`propertys.city` free-text** | Demo props 34–36 still say "Baldev Nagar Barmer" — **display only**; does **not** drive page generation |
+| **Cached API / generator logic** | Generator reads **Area Wise hierarchy only** (`City` → `Area` → `SubArea`), not property strings |
+
+**Admin data still to clean (recommended):**
+1. **Deactivate or delete city id 28** (`Baldev Nagar Barmer`) in Area Wise — duplicate of Barmer + Baldev Nagar area under city 22
+2. **Deactivate area id 72** (`Raj Colony`) under city 28 if city row remains
+3. **Optional:** Update demo properties 34–36 free-text `city` field to `Barmer` for consistency in admin/property cards elsewhere
+
+**Generator hardening (deployed):** `shouldGenerateCity()` skips cities whose slug ends with `-{other_city_slug}` (e.g. `baldev-nagar-barmer` when `barmer` exists) **and** cities with zero approved rent rows in `area_listing_property_locations`. `pruneStaleRentPages()` deletes unlocked `/rent/` registry rows not emitted in the current pass — **no nightly purge script required**.
+
+**Deploy note:** Plugin must rsync to `app/Plugins/SeoEngine/` (flat autoload path), not only `app/Plugins/SeoEngine/src/` — fixed in `deploy-b5-remote.sh`.
 
 ### What changed
 
@@ -443,38 +473,38 @@ php artisan seo-engine:build-sitemaps
 - [x] View-source noindex combo — `pageProps.robots` = `noindex, nofollow`, 0 listings, structured data present
 - [x] `/robots.txt` — dynamic; includes `Sitemap:`, `Disallow: /login`, GPTBot / Cloudflare content signals
 - [x] `npm run build` + PM2 `homes-sukoon` restart after removing static `public/robots.txt`
-- [x] Registry after admin cleanup + purge — **113 pages**, **1 indexable** (`/rent/barmer/`), **0 junk paths**
+- [x] Registry after generator hardening — **71 pages**, **1 indexable** (`/rent/barmer/`), **0 junk paths** (double-run verified)
+- [x] Live `/rent/barmer/` — no `?lang=` duplication in hrefs; all listing cards show **Barmer**
 - [x] Rent sitemap — 1 URL (`/rent/barmer/`) in `rent-pages.json` and live sitemap index
 - [~] PageSpeed mobile `/rent/barmer/` — **not scored this session** (PSI API daily quota 429; server has no Chrome for Lighthouse). Run manually: [PageSpeed Insights](https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fhomes.sukoon.group%2Frent%2Fbarmer%2F%3Flang%3Den&form_factor=mobile)
 
-### Registry snapshot (2026-06-13 post-purge)
+### Registry snapshot (2026-06-13 post-hardening)
 
 | page_type | count |
 |-----------|------:|
 | rent_city | 1 |
-| rent_area | 8 |
-| rent_subarea | 8 |
-| rent_combo_bhk | 32 |
-| rent_combo_type | 32 |
-| rent_combo_budget | 32 |
-| **Total** | **113** |
+| rent_area | 5 |
+| rent_subarea | 5 |
+| rent_combo_bhk | 20 |
+| rent_combo_type | 20 |
+| rent_combo_budget | 20 |
+| **Total** | **71** |
 
 | Indexable paths | count |
 |-----------------|------:|
 | `/rent/barmer/` | 1 |
 
-| Junk path patterns purged | count removed |
-|---------------------------|--------------:|
-| `baldev-nagar-barmer`, `raj-colneyer`, `saadsd` | 29 → **0 remaining** |
+| Junk paths (`baldev-nagar-barmer`, `raj-colneyer`, `saadsd`) | **0** after 2 consecutive generates |
 
 ### Deviations
 
 - **`meta name="robots"`** not in view-source for rent pages (same as A1 client `MetaData` pattern); crawlers receive **`X-Robots-Tag`** + `pageProps.robots` for SSR routes.
-- **Generator still emits junk paths** if stale Area Wise rows exist; `regen-and-purge.php` deletes + 301s to parent city after each generate until admin data is clean (now fixed).
+- **PopularSearches** empty when only 1 indexable path exists (expected).
 
-### Commit
+### Commits
 
-`seo: task B5 — /rent/ frontend, dynamic robots/llms, bot-files API`
+- `6118628` — `seo: task B5 — /rent/ frontend, dynamic robots/llms, bot-files API`
+- *(pending)* — B5 review fixes: frontend bugs + generator hardening
 
 ---
 

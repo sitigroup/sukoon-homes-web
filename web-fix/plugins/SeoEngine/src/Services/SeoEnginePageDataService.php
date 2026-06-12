@@ -123,11 +123,14 @@ class SeoEnginePageDataService
                 'propertys.price',
                 'propertys.propery_type',
                 'propertys.rentduration',
-                'propertys.city',
                 'propertys.state',
                 'propertys.updated_at',
+                DB::raw('COALESCE(lc.name, propertys.city) as city'),
+                DB::raw('la.name as area'),
             ])
             ->join('area_listing_property_locations as apl', 'apl.property_id', '=', 'propertys.id')
+            ->leftJoin('area_listing_cities as lc', 'lc.id', '=', 'apl.city_id')
+            ->leftJoin('area_listing_areas as la', 'la.id', '=', 'apl.area_id')
             ->where('propertys.status', 1)
             ->where('propertys.request_status', 'approved')
             ->where('propertys.propery_type', 1);
@@ -145,6 +148,7 @@ class SeoEnginePageDataService
                 'property_type' => 'rent',
                 'rent_duration' => $p->rentduration,
                 'city' => $p->city,
+                'area' => $p->area ?? null,
                 'state' => $p->state,
                 'updated_at' => optional($p->updated_at)->toIso8601String(),
             ];

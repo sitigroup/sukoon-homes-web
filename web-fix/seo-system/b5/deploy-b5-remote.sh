@@ -7,11 +7,12 @@ ADMIN="${ADMIN_ROOT:-/www/wwwroot/admin-homes}"
 B5="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN="$(cd "$(dirname "$0")/../../plugins/SeoEngine/src" && pwd)"
 
-echo "==> Sync SeoEngine plugin (bot files API + 404 log)"
+echo "==> Sync SeoEngine plugin (bot files API + 404 log + generator hardening)"
 ssh -o ConnectTimeout=25 "$HOST" "mkdir -p '$ADMIN/app/Plugins/SeoEngine'"
-cd "$(dirname "$PLUGIN")" && zip -qr /tmp/SeoEngine-b5.zip src
-scp -o ConnectTimeout=25 /tmp/SeoEngine-b5.zip "$HOST:/tmp/SeoEngine-b5.zip"
-ssh -o ConnectTimeout=25 "$HOST" "cd '$ADMIN/app/Plugins/SeoEngine' && unzip -o /tmp/SeoEngine-b5.zip && chown -R www:www '$ADMIN/app/Plugins/SeoEngine' && cd '$ADMIN' && php artisan optimize:clear"
+rsync -avz --delete -e "ssh -o ConnectTimeout=25" \
+  --exclude '.git' \
+  "$PLUGIN/" "$HOST:$ADMIN/app/Plugins/SeoEngine/"
+ssh -o ConnectTimeout=25 "$HOST" "chown -R www:www '$ADMIN/app/Plugins/SeoEngine' && cd '$ADMIN' && php artisan optimize:clear"
 
 echo "==> Deploy Next.js rent pages + bot files"
 ssh -o ConnectTimeout=25 "$HOST" "mkdir -p '$HOMES/pages/rent/[[...segments]]' '$HOMES/src/plugins/seo-engine'"

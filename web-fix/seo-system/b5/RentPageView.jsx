@@ -52,7 +52,7 @@ export default function RentPageView({ payload, popularPaths = [], lang = 'en', 
       <RentLinkBlock title="More in this area" links={payload?.links?.children || []} lang={lang} />
       <RentLinkBlock title="Budget filters" links={payload?.links?.budget || []} lang={lang} />
       <RentFaqBlock faqJson={page.faq_json} />
-      <PopularSearches paths={popularPaths} lang={lang} />
+      <PopularSearches paths={popularPaths} currentPath={page.path} lang={lang} />
     </div>
   );
 }

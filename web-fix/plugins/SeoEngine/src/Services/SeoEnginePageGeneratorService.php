@@ -16,6 +16,9 @@ class SeoEnginePageGeneratorService
 
     private const BEDROOM_PARAM_ID = 1;
 
+    /** @var list<string> */
+    private array $generatedPaths = [];
+
     public function __construct(
         private SeoEngineSettingsService $settings,
         private SeoEngineTemplateService $templates
@@ -31,6 +34,7 @@ class SeoEnginePageGeneratorService
         $this->templates->seedDefaultsIfEmpty();
         $typeFacets = $this->typeFacets();
         $budgetBands = $this->budgetBands();
+        $this->generatedPaths = [];
         $stats = [
             'rent_city' => 0,
             'rent_area' => 0,
@@ -45,6 +49,9 @@ class SeoEnginePageGeneratorService
 
         $cities = City::query()->where('status', true)->orderBy('name')->get();
         foreach ($cities as $city) {
+            if (! $this->shouldGenerateCity($city, $cities)) {
+                continue;
+            }
             $stats['rent_city'] += $this->upsertLocationPage('rent_city', "/rent/{$city->slug}/", [
                 'city' => $city->name,
                 'city_slug' => $city->slug,
@@ -105,7 +112,12 @@ class SeoEnginePageGeneratorService
                     );
                 }
 
-                $subAreas = SubArea::query()->where('area_id', $area->id)->get();
+                $subAreas = SubArea::query()
+                    ->where('area_id', $area->id)
+                    ->where('status', true)
+                    ->where('workflow_status', 'active')
+                    ->whereNull('archived_at')
+                    ->get();
                 foreach ($subAreas as $sub) {
                     $subSlug = $sub->slug ?: Str::slug($sub->name);
                     $stats['rent_subarea'] += $this->upsertLocationPage('rent_subarea', "/rent/{$city->slug}/{$areaSlug}/{$subSlug}/", [
@@ -118,6 +130,8 @@ class SeoEnginePageGeneratorService
                 }
             }
         }
+
+        $stats['pruned_stale'] = $this->pruneStaleRentPages();
 
         $this->settings->set('cron_last_generate_pages_at', now()->toIso8601String(), 'cron');
 
@@ -165,9 +179,53 @@ class SeoEnginePageGeneratorService
             ]
         );
 
+        $this->generatedPaths[] = $path;
+
         $indexable ? $stats['indexable']++ : $stats['not_indexable']++;
 
         return true;
+    }
+
+    /**
+     * Only generate rent pages for cities that are assigned in Area Wise property locations.
+     * Skips orphan duplicate cities whose slug ends with another active city slug
+     * (e.g. baldev-nagar-barmer when barmer exists).
+     *
+     * @param  \Illuminate\Support\Collection<int, City>  $allCities
+     */
+    private function shouldGenerateCity(City $city, $allCities): bool
+    {
+        foreach ($allCities as $other) {
+            if ((int) $other->id === (int) $city->id) {
+                continue;
+            }
+            $suffix = '-' . $other->slug;
+            if ($suffix !== '-' && str_ends_with($city->slug, $suffix)) {
+                return false;
+            }
+        }
+
+        return DB::table('area_listing_property_locations as apl')
+            ->join('propertys as p', 'p.id', '=', 'apl.property_id')
+            ->where('apl.city_id', $city->id)
+            ->where('p.status', 1)
+            ->where('p.request_status', 'approved')
+            ->where('p.propery_type', 1)
+            ->exists();
+    }
+
+    /** Remove /rent/ registry rows no longer produced by the current hierarchy pass. */
+    private function pruneStaleRentPages(): int
+    {
+        if ($this->generatedPaths === []) {
+            return 0;
+        }
+
+        return SeoEnginePage::query()
+            ->where('path', 'like', '/rent/%')
+            ->where('lock_content', false)
+            ->whereNotIn('path', $this->generatedPaths)
+            ->delete();
     }
 
   /**
