@@ -37,7 +37,21 @@ class GenerateContentCommand extends Command
 
                 continue;
             }
+            if ($key === 'tokens') {
+                continue;
+            }
             $this->line("  {$key}: {$value}");
+        }
+
+        if (! empty($stats['tokens']['total'])) {
+            $total = (int) $stats['tokens']['total'];
+            $generated = max(1, (int) ($stats['generated'] ?? 0));
+            $this->line('  tokens_total: ' . $total);
+            $this->line('  tokens_per_page: ' . round($total / $generated));
+            // gemini-2.5-flash-lite ~$0.075/1M input, ~$0.30/1M output (approximate)
+            $inCost = ($stats['tokens']['prompt'] / 1_000_000) * 0.075;
+            $outCost = ($stats['tokens']['completion'] / 1_000_000) * 0.30;
+            $this->line('  est_cost_usd: ~' . number_format($inCost + $outCost, 4));
         }
 
         return ($stats['failed'] ?? 0) > 0 && ($stats['generated'] ?? 0) === 0

@@ -81,6 +81,7 @@ class SeoEngineSettingsController extends Controller
             'ai_api_key' => ['nullable', 'string', 'max:512'],
             'ai_model_claude' => ['nullable', 'string', 'max:120'],
             'ai_rate_limit_ms' => ['nullable', 'integer', 'min:0', 'max:60000'],
+            'ai_content_min_listings' => ['nullable', 'integer', 'min:0', 'max:100'],
             'prompt_template_content' => ['nullable', 'string', 'max:20000'],
         ]);
 
@@ -131,6 +132,7 @@ class SeoEngineSettingsController extends Controller
             'ai_provider' => $validated['ai_provider'] ?? $settings->get('ai_provider', 'gemini'),
             'ai_model_claude' => $validated['ai_model_claude'] ?? $settings->get('ai_model_claude'),
             'ai_rate_limit_ms' => (int) ($validated['ai_rate_limit_ms'] ?? $settings->get('ai_rate_limit_ms', 2000)),
+            'ai_content_min_listings' => (int) ($validated['ai_content_min_listings'] ?? $settings->get('ai_content_min_listings', 1)),
             'prompt_template_content' => $validated['prompt_template_content'] ?? '',
         ]);
 

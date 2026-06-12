@@ -76,6 +76,7 @@ class SeoEngineSettingsService
             'ai_model_claude' => 'claude-3-5-haiku-20241022',
             'ai_api_key' => '',
             'ai_rate_limit_ms' => 2000,
+            'ai_content_min_listings' => 1,
             'prompt_template_content' => '',
         ];
     }

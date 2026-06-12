@@ -170,6 +170,12 @@
                     <label class="form-label">{{ __('seo-engine::seo_engine.ai_rate_limit_ms') }}</label>
                     <input type="number" name="ai_rate_limit_ms" class="form-control" value="{{ old('ai_rate_limit_ms', $settings['ai_rate_limit_ms'] ?? 2000) }}">
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ai_content_min_listings') }}</label>
+                    <input type="number" name="ai_content_min_listings" class="form-control" min="0" max="100"
+                        value="{{ old('ai_content_min_listings', $settings['ai_content_min_listings'] ?? 1) }}">
+                    <div class="form-text">{{ __('seo-engine::seo_engine.ai_content_min_listings_help') }}</div>
+                </div>
                 <div class="col-12">
                     <label class="form-label">{{ __('seo-engine::seo_engine.ai_api_key') }}</label>
                     <input type="password" name="ai_api_key" class="form-control" placeholder="{{ __('seo-engine::seo_engine.ai_api_key_hint') }}" autocomplete="new-password">

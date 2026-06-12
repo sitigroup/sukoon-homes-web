@@ -65,7 +65,19 @@ class SeoEngineGeminiContentProvider implements SeoEngineAiProviderInterface
                 return ['success' => false, 'error' => 'Empty Gemini response'];
             }
 
-            return ['success' => true, 'text' => $text];
+            $usage = $body['usageMetadata'] ?? [];
+            $promptTokens = (int) ($usage['promptTokenCount'] ?? 0);
+            $completionTokens = (int) ($usage['candidatesTokenCount'] ?? 0);
+
+            return [
+                'success' => true,
+                'text' => $text,
+                'usage' => [
+                    'prompt_tokens' => $promptTokens,
+                    'completion_tokens' => $completionTokens,
+                    'total_tokens' => $promptTokens + $completionTokens,
+                ],
+            ];
         } catch (\Throwable $e) {
             Log::warning('SeoEngine Gemini exception', ['message' => $e->getMessage()]);
 
