@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /user/
+Disallow: /login
+Disallow: /dashboard
+Disallow: /owner-dashboard
+Disallow: /tenant-dashboard
+Disallow: /payment
+Disallow: /property-detail-preview/
+Disallow: /compare-properties/
+Disallow: /api/
+
+Sitemap: https://homes.sukoon.group/sitemap.xml
