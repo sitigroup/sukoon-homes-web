@@ -52,6 +52,11 @@ if (process.env.NEXT_PUBLIC_SEO === 'true') {
 
     const pageData = await fetchPageData(slugValue);
     const property = pageData?.data?.[0] || null;
+
+    if (!property?.slug_id) {
+      return { notFound: true };
+    }
+
     const initialPropertyLoad = property
       ? {
           property,

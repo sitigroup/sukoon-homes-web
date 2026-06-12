@@ -136,6 +136,8 @@ export function breadcrumbListJsonLd(items = []) {
 }
 
 export function propertyBreadcrumbList(property = {}, lang = 'en') {
+  if (!property || !property.slug_id) return null;
+
   const base = webBase();
   const listing = property.area_listing || {};
   const items = [{ name: 'Home', url: `${base}/?lang=${lang}` }];
