@@ -51,19 +51,19 @@ class SeoEngineDashboardController extends Controller
         return view('seo-engine::admin.seo-engine.dashboard', compact('stats', 'cron'));
     }
 
-    public function regeneratePages(SeoEngineSettingsService $settings): RedirectResponse
+    public function regeneratePages(): RedirectResponse
     {
         $this->denyUnlessDashboard();
-        $settings->set('cron_last_generate_pages_at', now()->toIso8601String(), 'cron');
+        \Illuminate\Support\Facades\Artisan::call('seo-engine:generate-pages');
 
-        return back()->with('success', __('seo-engine::seo_engine.regenerate_pages_queued'));
+        return back()->with('success', __('seo-engine::seo_engine.regenerate_pages_done'));
     }
 
-    public function regenerateSitemaps(SeoEngineSettingsService $settings): RedirectResponse
+    public function regenerateSitemaps(): RedirectResponse
     {
         $this->denyUnlessDashboard();
-        $settings->set('cron_last_build_sitemaps_at', now()->toIso8601String(), 'cron');
+        \Illuminate\Support\Facades\Artisan::call('seo-engine:build-sitemaps');
 
-        return back()->with('success', __('seo-engine::seo_engine.regenerate_sitemaps_queued'));
+        return back()->with('success', __('seo-engine::seo_engine.regenerate_sitemaps_done'));
     }
 }

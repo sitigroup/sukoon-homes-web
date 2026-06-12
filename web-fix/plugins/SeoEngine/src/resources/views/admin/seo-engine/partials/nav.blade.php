@@ -21,4 +21,11 @@
             </a>
         </li>
     @endif
+    @if(function_exists('has_permissions') && has_permissions('templates', 'seo_engine'))
+        <li class="nav-item">
+            <a class="nav-link {{ $active === 'templates' ? 'active' : '' }}" href="{{ route('seo-engine.templates.index') }}">
+                {{ __('seo-engine::seo_engine.nav_templates') }}
+            </a>
+        </li>
+    @endif
 </ul>

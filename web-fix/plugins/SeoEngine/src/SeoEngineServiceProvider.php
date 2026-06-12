@@ -4,11 +4,15 @@ namespace App\Plugins\SeoEngine;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use App\Plugins\SeoEngine\Console\BuildSitemapsCommand;
+use App\Plugins\SeoEngine\Console\GeneratePagesCommand;
 use App\Plugins\SeoEngine\Observers\ArticleSlugObserver;
 use App\Plugins\SeoEngine\Observers\ProjectSlugObserver;
+use App\Plugins\SeoEngine\Observers\PropertySeoPageObserver;
 use App\Plugins\SeoEngine\Observers\PropertySlugObserver;
 use App\Plugins\SeoEngine\Services\SeoEngineRedirectService;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
+use Illuminate\Console\Scheduling\Schedule;
 
 class SeoEngineServiceProvider extends ServiceProvider
 {
@@ -47,6 +51,17 @@ class SeoEngineServiceProvider extends ServiceProvider
             }
         }
 
-        // Scheduled commands (seo-engine:generate-pages, etc.) registered in TASK B3.
+        if (class_exists(\App\Models\Property::class)) {
+            \App\Models\Property::observe(PropertySeoPageObserver::class);
+        }
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class]);
+
+            $this->app->booted(function () {
+                $schedule = $this->app->make(Schedule::class);
+                $schedule->command('seo-engine:generate-pages')->dailyAt('02:00')->withoutOverlapping();
+            });
+        }
     }
 }

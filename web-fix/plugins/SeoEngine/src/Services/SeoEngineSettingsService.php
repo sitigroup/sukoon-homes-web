@@ -69,6 +69,8 @@ class SeoEngineSettingsService
             'cron_last_generate_pages_at' => null,
             'cron_last_build_sitemaps_at' => null,
             'cron_last_generate_content_at' => null,
+            'indexnow_key' => '',
+            'indexnow_log' => [],
         ];
     }
 

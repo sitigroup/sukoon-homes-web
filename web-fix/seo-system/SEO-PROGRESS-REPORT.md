@@ -252,3 +252,26 @@ Pre-migration backup attempted; long `mysqldump` was interrupted. Migrations are
 ### API sample (public fields)
 
 `site_name`, `site_url`, `logo_url`, `site_description`, `same_as`, `knows_about`, `index_threshold`, `budget_bands`, `schema_toggles`, `ai_bot_policy`
+
+---
+
+## TASK B2 — Redirects + slug history
+
+**Status:** ✅ Deployed (2026-06-12)
+
+**Commits:** `53f0c19` (B2 code), A4 hotfix `cfdd666`
+
+### VERIFY checklist (2026-06-12)
+
+| Check | Result |
+|-------|--------|
+| Slug change on **inactive** property id 27 (`3-bhk-flat-for-rent`, status=0) → auto redirect row | ✅ PASS |
+| Old URL `301` via middleware | ✅ `location: /property-details/3-bhk-flat-for-rent-b2verify-…/` |
+| Chain A→B→C flattens to A→C | ✅ PASS (`test-redirect-service.php`) |
+| Hit counter increments on API resolve | ✅ PASS (+1 per call) |
+| Loop prevention | ✅ PASS (Y→X blocked when X→Y exists) |
+| Middleware scope | ✅ `matcher` only `property-details`, `project-details`, `article-details`, `rent`; `/` and `/search/` return **200** with no `Location` |
+
+### Slug investigation (recap)
+
+`2-bhk-flat-for-rent` — **no DB row**; closest inactive id 27 is `3-bhk-flat-for-rent`. Not a slug mismatch.

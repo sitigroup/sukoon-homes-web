@@ -3,6 +3,7 @@
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineDashboardController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineRedirectsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineSettingsController;
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineTemplatesController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('seo-engine')
@@ -25,4 +26,7 @@ Route::prefix('seo-engine')
         Route::put('/redirects/{redirect}', [SeoEngineRedirectsController::class, 'update'])->name('redirects.update');
         Route::delete('/redirects/{redirect}', [SeoEngineRedirectsController::class, 'destroy'])->name('redirects.destroy');
         Route::post('/redirects/import', [SeoEngineRedirectsController::class, 'import'])->name('redirects.import');
+
+        Route::get('/templates', [SeoEngineTemplatesController::class, 'index'])->name('templates.index');
+        Route::post('/templates', [SeoEngineTemplatesController::class, 'store'])->name('templates.store');
     });

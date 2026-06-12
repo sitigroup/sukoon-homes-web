@@ -2,7 +2,7 @@
  * scripts/sitemap-generator.js — sitemap index + child sitemaps (SSR + CLI).
  *
  * Index: /sitemap.xml
- * Children: /sitemaps/static.xml, locations.xml, properties-{n}.xml, projects.xml, articles.xml
+ * Children: /sitemaps/static.xml, locations.xml, properties-{n}.xml, projects.xml, articles.xml, rent-pages.xml
  */
 
 const axios = require('axios');
@@ -421,6 +421,29 @@ const generateSitemapIndexXml = (childSitemaps = []) => {
 };
 
 /**
+ * Indexable /rent/ pages from SeoEngine API (TASK B3).
+ */
+const fetchRentPageRoutes = async () => {
+  try {
+    const apiBase = getApiBase().replace(/\/$/, '');
+    const res = await axios.get(`${apiBase}/seo-engine/rent-sitemap`, {
+      headers: apiHeaders(),
+      timeout: 20000,
+    });
+    const rows = res.data?.data || [];
+    return rows.map((row) => ({
+      path: row.path,
+      priority: 0.75,
+      changefreq: 'weekly',
+      lastmod: row.lastmod ? new Date(row.lastmod) : new Date(),
+    }));
+  } catch (err) {
+    console.warn('[sitemap] rent-pages fetch failed:', err.message);
+    return [];
+  }
+};
+
+/**
  * Build index child list (loc URLs only).
  */
 const buildSitemapIndexChildren = async () => {
@@ -452,6 +475,11 @@ const buildSitemapIndexChildren = async () => {
   const agentRoutes = await fetchRoutesForType('agents');
   if (agentRoutes.length > 0) {
     children.push({ loc: `${webUrl}/sitemaps/agents.xml`, lastmod: now });
+  }
+
+  const rentRoutes = await fetchRentPageRoutes();
+  if (rentRoutes.length > 0) {
+    children.push({ loc: `${webUrl}/sitemaps/rent-pages.xml`, lastmod: now });
   }
 
   return children;
@@ -493,6 +521,8 @@ const generateChildSitemapXml = async (name, options = {}) => {
     const all = await fetchRoutesForType('properties');
     const start = (chunkNum - 1) * PROPERTY_CHUNK_SIZE;
     routes = all.slice(start, start + PROPERTY_CHUNK_SIZE);
+  } else if (name === 'rent-pages') {
+    routes = await fetchRentPageRoutes();
   } else {
     throw new Error(`Unknown sitemap child: ${name}`);
   }
