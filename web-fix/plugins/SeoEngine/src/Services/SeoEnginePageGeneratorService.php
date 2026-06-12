@@ -14,8 +14,6 @@ class SeoEnginePageGeneratorService
 {
     private const BHK_FACETS = ['1bhk' => 1, '2bhk' => 2, '3bhk' => 3, '4bhk' => 4];
 
-    private const TYPE_FACETS = ['flat', 'house', 'apartment'];
-
     private const BEDROOM_PARAM_ID = 1;
 
     public function __construct(
@@ -31,6 +29,8 @@ class SeoEnginePageGeneratorService
         }
 
         $this->templates->seedDefaultsIfEmpty();
+        $typeFacets = $this->typeFacets();
+        $budgetBands = $this->budgetBands();
         $stats = [
             'rent_city' => 0,
             'rent_area' => 0,
@@ -74,25 +74,26 @@ class SeoEnginePageGeneratorService
                         $stats
                     );
                 }
-                foreach (self::TYPE_FACETS as $typeFacet) {
+                foreach ($typeFacets as $typeFacet) {
                     $stats['rent_combo_type'] += $this->upsertComboPage(
                         'rent_combo_type',
                         "/rent/{$city->slug}/{$areaSlug}/{$typeFacet}/",
-                        ['city' => $city->name, 'area' => $area->name, 'type' => ucfirst($typeFacet)],
+                        ['city' => $city->name, 'area' => $area->name, 'type' => $this->typeFacetLabel($typeFacet)],
                         ['city_id' => $city->id, 'area_id' => $area->id, 'type_facet' => $typeFacet],
                         $stats
                     );
                 }
-                foreach ($this->settings->get('budget_bands', []) as $band) {
-                    $bandSlug = Str::slug($band['label'] ?? 'budget');
+                foreach ($budgetBands as $band) {
+                    $bandSlug = $this->budgetBandSlug($band);
                     $stats['rent_combo_budget'] += $this->upsertComboPage(
                         'rent_combo_budget',
                         "/rent/{$city->slug}/{$areaSlug}/{$bandSlug}/",
                         [
                             'city' => $city->name,
                             'area' => $area->name,
-                            'min_rent' => $band['min'] ?? '',
-                            'max_rent' => $band['max'] ?? '',
+                            'band_label' => $band['label'] ?? '',
+                            'min_rent' => $this->formatBandAmount($band['min'] ?? null),
+                            'max_rent' => $this->formatBandAmount($band['max'] ?? null),
                         ],
                         [
                             'city_id' => $city->id,
@@ -145,12 +146,7 @@ class SeoEnginePageGeneratorService
         $quality = $this->qualityScore($metrics);
         $indexable = $metrics['count'] >= $threshold && $quality >= 50;
 
-        $renderVars = array_merge($labels, [
-            'count' => $metrics['count'],
-            'avg_rent' => $metrics['avg_rent'] ?? '',
-            'min_rent' => $metrics['min_rent'] ?? '',
-            'max_rent' => $metrics['max_rent'] ?? '',
-        ]);
+        $renderVars = $this->buildRenderVars($pageType, $labels, $metrics);
         $meta = $this->templates->render($pageType, $renderVars);
 
         SeoEnginePage::query()->updateOrCreate(
@@ -202,11 +198,7 @@ class SeoEnginePageGeneratorService
             });
         }
         if (! empty($filters['type_facet'])) {
-            $facet = $filters['type_facet'];
-            $q->where(function ($w) use ($facet) {
-                $w->where('p.title', 'like', '%' . $facet . '%')
-                    ->orWhere('p.title', 'like', '%' . strtoupper($facet) . '%');
-            });
+            $this->applyTypeFacetFilter($q, $filters['type_facet']);
         }
         if (array_key_exists('budget_min', $filters) || array_key_exists('budget_max', $filters)) {
             if ($filters['budget_min'] !== null) {
@@ -276,5 +268,122 @@ class SeoEnginePageGeneratorService
         );
 
         return 1;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function typeFacets(): array
+    {
+        $facets = $this->settings->get('type_facets', ['flat', 'house', 'apartment', 'pg']);
+        if (! is_array($facets)) {
+            return ['flat', 'house', 'apartment', 'pg'];
+        }
+
+        return array_values(array_filter(array_map(
+            fn ($f) => Str::slug((string) $f),
+            $facets
+        )));
+    }
+
+    /**
+     * @return list<array{label:string,min:?int,max:?int}>
+     */
+    private function budgetBands(): array
+    {
+        $bands = $this->settings->get('budget_bands', []);
+        if (! is_array($bands)) {
+            return [];
+        }
+
+        return array_values(array_filter($bands, fn ($band) => ! empty($band['label'])));
+    }
+
+    private function typeFacetLabel(string $facet): string
+    {
+        return match ($facet) {
+            'pg' => 'PG',
+            default => ucfirst($facet),
+        };
+    }
+
+    /**
+     * @param  array{label?:string,min?:int|null,max?:int|null}  $band
+     */
+    private function budgetBandSlug(array $band): string
+    {
+        $slug = Str::slug($band['label'] ?? '');
+        if ($slug !== '') {
+            return $slug;
+        }
+
+        $min = $band['min'] ?? null;
+        $max = $band['max'] ?? null;
+        if ($max !== null && ($min === null || $min === 0)) {
+            return 'under-rs' . ($max + 1);
+        }
+        if ($min !== null && $max !== null) {
+            return 'rs' . $min . '-' . $max;
+        }
+        if ($min !== null) {
+            return 'rs' . $min . '-plus';
+        }
+
+        return 'budget';
+    }
+
+    private function formatBandAmount(mixed $amount): string
+    {
+        if ($amount === null || $amount === '') {
+            return '';
+        }
+
+        return (string) (int) $amount;
+    }
+
+    /**
+     * @param  array<string, mixed>  $labels
+     * @param  array{count:int,avg_rent:?int,min_rent:?int,max_rent:?int}  $metrics
+     * @return array<string, mixed>
+     */
+    private function buildRenderVars(string $pageType, array $labels, array $metrics): array
+    {
+        $vars = array_merge($labels, [
+            'count' => $metrics['count'],
+            'avg_rent' => $metrics['avg_rent'] ?? '',
+        ]);
+
+        if ($pageType === 'rent_combo_budget') {
+            return $vars;
+        }
+
+        $vars['min_rent'] = $metrics['min_rent'] ?? '';
+        $vars['max_rent'] = $metrics['max_rent'] ?? '';
+
+        return $vars;
+    }
+
+    private function applyTypeFacetFilter($q, string $facet): void
+    {
+        if ($facet === 'pg') {
+            $q->where(function ($w) {
+                $w->where('p.title', 'like', '%pg%')
+                    ->orWhere('p.title', 'like', '%PG%')
+                    ->orWhere('p.title', 'like', '%Paying Guest%')
+                    ->orWhereExists(function ($sub) {
+                        $sub->select(DB::raw(1))
+                            ->from('categories as c')
+                            ->whereColumn('c.id', 'p.category_id')
+                            ->where('c.category', 'like', '%PG%');
+                    });
+            });
+
+            return;
+        }
+
+        $q->where(function ($w) use ($facet) {
+            $w->where('p.title', 'like', '%' . $facet . '%')
+                ->orWhere('p.title', 'like', '%' . strtoupper($facet) . '%');
+        });
     }
 }

@@ -102,7 +102,10 @@ $pgFacetPages = SeoEnginePage::query()
     ->where('path', 'like', '%/pg/%')
     ->count();
 
-$typeFacets = ['flat', 'house', 'apartment', 'pg'];
+$typeFacets = $settings->get('type_facets', ['flat', 'house', 'apartment', 'pg']);
+if (! is_array($typeFacets)) {
+    $typeFacets = ['flat', 'house', 'apartment', 'pg'];
+}
 
 echo json_encode([
     'pages_by_type' => $byType,

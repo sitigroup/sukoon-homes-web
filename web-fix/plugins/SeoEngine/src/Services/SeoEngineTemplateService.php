@@ -16,8 +16,8 @@ class SeoEngineTemplateService
     ];
 
     public const VARIABLES = [
-        '{count}', '{type}', '{area}', '{city}', '{subarea}',
-        '{min_rent}', '{max_rent}', '{avg_rent}', '{top_landmark}',
+        '{count}', '{listings_word}', '{listings_word_lower}', '{type}', '{area}', '{city}', '{subarea}',
+        '{min_rent}', '{max_rent}', '{avg_rent}', '{top_landmark}', '{band_label}',
     ];
 
     public function defaults(): array
@@ -29,9 +29,9 @@ class SeoEngineTemplateService
                 'meta_description_template' => 'Browse {count} verified rental listings in {city}. Average rent from ₹{min_rent}. Find flats and houses on Sukoon Homes.',
             ],
             'rent_area' => [
-                'title_template' => 'Rent in {area}, {city} — {count} Listings | Sukoon Homes',
+                'title_template' => 'Rent in {area}, {city} — {count} {listings_word} | Sukoon Homes',
                 'h1_template' => 'Rental Homes in {area}, {city}',
-                'meta_description_template' => '{count} homes for rent in {area}, {city}. Avg rent ₹{avg_rent}. Verified listings with online agreements.',
+                'meta_description_template' => '{count} {listings_word_lower} for rent in {area}, {city}. Avg rent ₹{avg_rent}. Verified listings with online agreements.',
             ],
             'rent_subarea' => [
                 'title_template' => '{subarea} Rentals, {area} {city} | Sukoon Homes',
@@ -49,9 +49,9 @@ class SeoEngineTemplateService
                 'meta_description_template' => 'Find {count} {type} rentals in {area}. Avg ₹{avg_rent}. Sukoon verified listings.',
             ],
             'rent_combo_budget' => [
-                'title_template' => 'Rent under ₹{max_rent} in {area}, {city} | Sukoon Homes',
-                'h1_template' => 'Budget Rentals in {area}',
-                'meta_description_template' => '{count} homes for rent in {area} from ₹{min_rent} to ₹{max_rent}. Verified listings on Sukoon Homes.',
+                'title_template' => 'Rent {band_label} in {area}, {city} | Sukoon Homes',
+                'h1_template' => 'Budget Rentals ({band_label}) in {area}',
+                'meta_description_template' => '{count} {listings_word_lower} for rent in {area} ({band_label}). Verified listings on Sukoon Homes.',
             ],
         ];
     }
@@ -82,13 +82,16 @@ class SeoEngineTemplateService
             'meta_description_template' => $templates['meta_description_template'] ?? null,
         ]);
 
-        $stale = SeoEngineTemplateVersion::query()
+        $keepIds = SeoEngineTemplateVersion::query()
             ->where('page_type', $pageType)
             ->orderByDesc('id')
-            ->skip(5)
+            ->limit(5)
             ->pluck('id');
-        if ($stale->isNotEmpty()) {
-            SeoEngineTemplateVersion::query()->whereIn('id', $stale)->delete();
+        if ($keepIds->isNotEmpty()) {
+            SeoEngineTemplateVersion::query()
+                ->where('page_type', $pageType)
+                ->whereNotIn('id', $keepIds)
+                ->delete();
         }
 
         return $version;
@@ -96,6 +99,10 @@ class SeoEngineTemplateService
 
     public function render(string $pageType, array $vars): array
     {
+        $count = (int) ($vars['count'] ?? 0);
+        $vars['listings_word'] = $count === 1 ? 'Listing' : 'Listings';
+        $vars['listings_word_lower'] = $count === 1 ? 'listing' : 'listings';
+
         $tpl = $this->latest($pageType)?->toArray() ?? ($this->defaults()[$pageType] ?? []);
         $replace = [];
         foreach ($vars as $key => $value) {
@@ -115,6 +122,14 @@ class SeoEngineTemplateService
             if (! $this->latest($pageType)) {
                 $this->save($pageType, $templates);
             }
+        }
+    }
+
+    /** Push code defaults as a new version (used after template fixes). */
+    public function publishDefaults(): void
+    {
+        foreach ($this->defaults() as $pageType => $templates) {
+            $this->save($pageType, $templates);
         }
     }
 }

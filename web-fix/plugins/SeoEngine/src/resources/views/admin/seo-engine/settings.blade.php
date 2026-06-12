@@ -115,6 +115,28 @@
         </div>
 
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ __('seo-engine::seo_engine.type_facets') }}</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-type-facet">{{ __('seo-engine::seo_engine.add_type_facet') }}</button>
+            </div>
+            <div class="card-body" id="type-facets-list">
+                @php $typeFacets = old('type_facets', $settings['type_facets'] ?? ['flat', 'house', 'apartment', 'pg']); @endphp
+                @forelse($typeFacets as $facet)
+                    <div class="input-group mb-2 type-facet-row">
+                        <input type="text" name="type_facets[]" class="form-control" value="{{ $facet }}" placeholder="flat">
+                        <button type="button" class="btn btn-outline-danger remove-row">&times;</button>
+                    </div>
+                @empty
+                    <div class="input-group mb-2 type-facet-row">
+                        <input type="text" name="type_facets[]" class="form-control" placeholder="flat">
+                        <button type="button" class="btn btn-outline-danger remove-row">&times;</button>
+                    </div>
+                @endforelse
+            </div>
+            <div class="card-footer text-muted small">{{ __('seo-engine::seo_engine.type_facets_help') }}</div>
+        </div>
+
+        <div class="card mb-3">
             <div class="card-header"><h5 class="mb-0">{{ __('seo-engine::seo_engine.schema_toggles') }}</h5></div>
             <div class="card-body row g-2">
                 @foreach($schemaTypes as $type)
@@ -204,9 +226,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('bands-list').appendChild(row);
         bandIndex++;
     });
+    document.getElementById('add-type-facet')?.addEventListener('click', function () {
+        const row = document.createElement('div');
+        row.className = 'input-group mb-2 type-facet-row';
+        row.innerHTML = '<input type="text" name="type_facets[]" class="form-control" placeholder="flat"><button type="button" class="btn btn-outline-danger remove-row">&times;</button>';
+        document.getElementById('type-facets-list').appendChild(row);
+    });
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('remove-row')) {
-            e.target.closest('.same-as-row, .knows-row, .band-row')?.remove();
+            e.target.closest('.same-as-row, .knows-row, .band-row, .type-facet-row')?.remove();
         }
     });
 });

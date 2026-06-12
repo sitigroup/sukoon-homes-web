@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SeoEngineSettingsController extends Controller
@@ -69,6 +70,8 @@ class SeoEngineSettingsController extends Controller
             'budget_bands.*.label' => ['nullable', 'string', 'max:120'],
             'budget_bands.*.min' => ['nullable', 'integer', 'min:0'],
             'budget_bands.*.max' => ['nullable', 'integer', 'min:0'],
+            'type_facets' => ['nullable', 'array'],
+            'type_facets.*' => ['nullable', 'string', 'max:40', 'regex:/^[a-z0-9-]+$/'],
             'schema_toggles' => ['nullable', 'array'],
             'robots_txt' => ['nullable', 'string', 'max:20000'],
             'llms_txt' => ['nullable', 'string', 'max:20000'],
@@ -101,6 +104,11 @@ class SeoEngineSettingsController extends Controller
             ];
         }
 
+        $typeFacets = array_values(array_filter(array_map(
+            fn ($f) => Str::slug((string) $f),
+            $validated['type_facets'] ?? []
+        )));
+
         $settings->setMany([
             'site_name' => $validated['site_name'],
             'site_url' => rtrim($validated['site_url'], '/'),
@@ -110,6 +118,7 @@ class SeoEngineSettingsController extends Controller
             'knows_about' => $knowsAbout,
             'index_threshold' => (int) $validated['index_threshold'],
             'budget_bands' => $bands ?: $settings->get('budget_bands'),
+            'type_facets' => $typeFacets ?: $settings->get('type_facets'),
             'schema_toggles' => $schemaToggles,
             'robots_txt' => $validated['robots_txt'] ?? '',
             'llms_txt' => $validated['llms_txt'] ?? '',

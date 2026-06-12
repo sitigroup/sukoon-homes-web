@@ -43,6 +43,7 @@ class SeoEngineSettingsService
                 ['label' => '₹15,000 – ₹25,000', 'min' => 15000, 'max' => 24999],
                 ['label' => '₹25,000+', 'min' => 25000, 'max' => null],
             ],
+            'type_facets' => ['flat', 'house', 'apartment', 'pg'],
             'schema_toggles' => [
                 'Organization' => true,
                 'RealEstateAgent' => true,
@@ -166,7 +167,7 @@ class SeoEngineSettingsService
         return match ($key) {
             'robots_txt', 'llms_txt', 'ai_bot_policy' => 'bots',
             'schema_toggles' => 'schema',
-            'budget_bands', 'index_threshold' => 'indexing',
+            'budget_bands', 'index_threshold', 'type_facets' => 'indexing',
             'cron_last_generate_pages_at', 'cron_last_build_sitemaps_at', 'cron_last_generate_content_at' => 'cron',
             default => 'identity',
         };
