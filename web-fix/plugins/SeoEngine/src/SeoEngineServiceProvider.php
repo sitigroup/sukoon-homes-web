@@ -55,9 +55,9 @@ class SeoEngineServiceProvider extends ServiceProvider
             \App\Models\Property::observe(PropertySeoPageObserver::class);
         }
 
-        if ($this->app->runningInConsole()) {
-            $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class]);
+        $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class]);
 
+        if ($this->app->runningInConsole()) {
             $this->app->booted(function () {
                 $schedule = $this->app->make(Schedule::class);
                 $schedule->command('seo-engine:generate-pages')->dailyAt('02:00')->withoutOverlapping();
