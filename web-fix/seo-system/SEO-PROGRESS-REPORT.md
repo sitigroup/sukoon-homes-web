@@ -275,3 +275,130 @@ Pre-migration backup attempted; long `mysqldump` was interrupted. Migrations are
 ### Slug investigation (recap)
 
 `2-bhk-flat-for-rent` — **no DB row**; closest inactive id 27 is `3-bhk-flat-for-rent`. Not a slug mismatch.
+
+---
+
+## TASK B3 — Generator + locality stats + templates
+
+**Status:** ✅ Deployed (2026-06-12) — **⏸ PAUSE** (human review required before B4)
+
+**Commits:** `b3648c1` (B3 code), `f685198` (verify script only)
+
+### Deploy (2026-06-12)
+
+1. Uploaded `web-fix/plugins/SeoEngine/src/` → `/www/wwwroot/admin-homes/app/Plugins/SeoEngine/` (zip + unzip)
+2. `chown -R www:www app/Plugins/SeoEngine`
+3. Migration `2026_06_12_000002_create_seo_engine_templates_table` — DONE
+4. `php artisan optimize:clear`
+5. `scripts/sitemap-generator.js` copied to homes (backup: `sitemap-generator.js.backup-b3`)
+
+### Hotfix during deploy
+
+`SeoEngineTemplateService::save()` used `skip(5)` without `limit` — MariaDB error 1064 on first `seo-engine:generate-pages`. Fixed on server (and staged locally): keep newest 5 versions via `limit(5)` + `whereNotIn` delete.
+
+### Scheduler cron
+
+| Check | Result |
+|-------|--------|
+| aaPanel cron runs `schedule:run` every minute | ✅ `*/1 * * * * /www/server/cron/d5fb6e7700cf2b0ac31d51fc3a28edd9` |
+| Command | `cd /www/wwwroot/admin-homes && /usr/bin/php artisan schedule:run --quiet` |
+| Nightly generator | Registered in `SeoEngineServiceProvider` at 02:00 (`seo-engine:generate-pages`) |
+
+### First generation run
+
+```
+php artisan seo-engine:generate-pages
+php artisan seo-engine:build-sitemaps
+```
+
+| page_type | count |
+|-----------|------:|
+| rent_city | 2 |
+| rent_area | 4 |
+| rent_subarea | 5 |
+| rent_combo_bhk | 16 |
+| rent_combo_type | 12 |
+| rent_combo_budget | 16 |
+| **Total** | **55** |
+
+| Rollup | count |
+|--------|------:|
+| location (city+area+subarea) | 11 |
+| combo (bhk+type) | 28 |
+| budget | 16 |
+
+| Indexable | count |
+|-----------|------:|
+| `is_indexable=true` | 1 |
+| `is_indexable=false` | 54 |
+
+**Why only 1 indexable:** index threshold = 3; only `/rent/baldev-nagar-barmer/` has 4 active rent listings (duplicate city row id 28). ~5 active rent listings site-wide.
+
+### Sample generated titles (top by listing_count)
+
+1. `/rent/baldev-nagar-barmer/` — *Flats & Houses for Rent in Baldev Nagar Barmer | Sukoon Homes* (4 listings, indexable)
+2. `/rent/barmer/` — *Flats & Houses for Rent in Barmer | Sukoon Homes* (1 listing)
+3. `/rent/barmer/baldev-nagar/` — *Rent in Baldev Nagar, Barmer — 1 Listings | Sukoon Homes*
+4. `/rent/barmer/baldev-nagar/under-rs10000/` — *Rent under ₹8000 in Baldev Nagar, Barmer | Sukoon Homes*
+5. `/rent/barmer/baldev-nagar/gali-wala/` — *Gali Wala Rentals, Baldev Nagar Barmer | Sukoon Homes*
+
+### Locality stats
+
+- **9 rows** in `seo_engine_locality_stats`
+
+### Rent sitemap
+
+| Source | URL count |
+|--------|----------:|
+| `storage/app/seo-engine/rent-pages.json` | 1 |
+| `GET /api/seo-engine/rent-sitemap` | 1 (`/rent/baldev-nagar-barmer/`) |
+| Live `/sitemap.xml` index | **Not yet** — `rent-pages.xml` child missing until `npm run build && pm2 restart homes-sukoon` (Next.js bundles sitemap generator at build time) |
+
+### IndexNow
+
+- `indexnow_key` **not configured** in SEO Engine settings → ping skipped (expected until key added + `/{key}.txt` on web root)
+
+### PG category / type facet
+
+| Check | Result |
+|-------|--------|
+| `categories` table | **Yes** — id **8**, name `PG/Room` |
+| Active listings with PG in title | 0 |
+| Generator `TYPE_FACETS` in code | `flat`, `house`, `apartment` only — **PG not included** |
+| `rent_combo_type` pages with `/pg/` path | 0 |
+
+**Action for human:** Decide whether to add `pg` to `TYPE_FACETS` in `SeoEnginePageGeneratorService.php` (maps to category slug).
+
+### VERIFY checklist
+
+- [x] Generator run: 55 registry rows; counts align with ~5 active rent listings
+- [x] Below threshold → `is_indexable=false` (54/55); `quality_score` populated
+- [~] Template admin + version history — deployed; not manually UI-tested this session
+- [~] rent sitemap in **live** sitemap index — pending frontend rebuild
+- [~] IndexNow ping on property update — skipped (no key)
+- [x] **PAUSE** for human review
+
+### Commit f685198
+
+`seo: add B3 deploy verification script` — adds only `web-fix/seo-system/b3/verify-b3-full.php` (server-side JSON report script). No plugin code changes in that commit.
+
+---
+
+**⏸ PAUSE — Please review this report before TASK B4.**
+
+### B3 review fixes (2026-06-12) — commit `136843a`
+
+| # | Fix | Result |
+|---|-----|--------|
+| 1 | MariaDB `OFFSET` hotfix in `SeoEngineTemplateService::save()` | ✅ Committed + deployed |
+| 2 | Budget band path/title vs admin settings | ✅ Title uses `{band_label}`; path slug from label (`under-rs10000` ↔ "Under ₹10,000"); listing metrics no longer overwrite band values |
+| 3 | Pluralization | ✅ `1 Listing` / `2 Listings` via `{listings_word}` in templates + render() |
+| 4 | `type_facets` in Global Settings | ✅ Admin repeater; seeded `flat, house, apartment, pg`; generator reads settings; **4 pg facet pages** generated |
+| 5 | IndexNow | ✅ Key `2d03c06a5f6a6bf476b65d275f5a1fcb` saved; `/{key}.txt` HTTP 200; test ping **ok** |
+| 6 | Frontend sitemap | ✅ `npm run build` + PM2 restart; `/sitemap.xml` lists `rent-pages.xml` (1 URL) |
+
+**Admin budget bands on server (from settings DB):** Under ₹10,000 (2999–9999), ₹10k–15k, ₹15k–25k, ₹25k+ (25000–49999).
+
+**Sample after regenerate:** `/rent/barmer/baldev-nagar/under-rs10000/` → title *Rent Under ₹10,000 in Baldev Nagar, Barmer | Sukoon Homes*
+
+**Pending (human):** Fix city id 28 duplicate in admin, then click Regenerate in dashboard.
