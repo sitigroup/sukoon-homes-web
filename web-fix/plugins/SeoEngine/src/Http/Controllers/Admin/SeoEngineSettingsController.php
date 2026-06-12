@@ -77,6 +77,11 @@ class SeoEngineSettingsController extends Controller
             'llms_txt' => ['nullable', 'string', 'max:20000'],
             'ai_bot_policy' => ['nullable', 'array'],
             'ai_bot_policy.*' => ['nullable', 'in:allow,block'],
+            'ai_provider' => ['nullable', 'in:gemini,claude'],
+            'ai_api_key' => ['nullable', 'string', 'max:512'],
+            'ai_model_claude' => ['nullable', 'string', 'max:120'],
+            'ai_rate_limit_ms' => ['nullable', 'integer', 'min:0', 'max:60000'],
+            'prompt_template_content' => ['nullable', 'string', 'max:20000'],
         ]);
 
         $sameAs = array_values(array_filter($validated['same_as'] ?? []));
@@ -123,7 +128,15 @@ class SeoEngineSettingsController extends Controller
             'robots_txt' => $validated['robots_txt'] ?? '',
             'llms_txt' => $validated['llms_txt'] ?? '',
             'ai_bot_policy' => $aiPolicy,
+            'ai_provider' => $validated['ai_provider'] ?? $settings->get('ai_provider', 'gemini'),
+            'ai_model_claude' => $validated['ai_model_claude'] ?? $settings->get('ai_model_claude'),
+            'ai_rate_limit_ms' => (int) ($validated['ai_rate_limit_ms'] ?? $settings->get('ai_rate_limit_ms', 2000)),
+            'prompt_template_content' => $validated['prompt_template_content'] ?? '',
         ]);
+
+        if (! empty($validated['ai_api_key'])) {
+            $settings->set('ai_api_key', $validated['ai_api_key'], 'secrets');
+        }
 
         return back()->with('success', __('seo-engine::seo_engine.settings_saved'));
     }

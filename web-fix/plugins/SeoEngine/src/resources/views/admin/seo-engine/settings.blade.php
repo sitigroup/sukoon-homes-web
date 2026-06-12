@@ -153,6 +153,36 @@
         </div>
 
         <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">{{ __('seo-engine::seo_engine.ai_content') }}</h5></div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ai_provider') }}</label>
+                    <select name="ai_provider" class="form-select">
+                        <option value="gemini" @selected(old('ai_provider', $settings['ai_provider'] ?? 'gemini') === 'gemini')>Google Gemini (GEMINI_API_KEY)</option>
+                        <option value="claude" @selected(old('ai_provider', $settings['ai_provider'] ?? '') === 'claude')>Anthropic Claude (SEO_AI_API_KEY)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ai_model_claude') }}</label>
+                    <input type="text" name="ai_model_claude" class="form-control" value="{{ old('ai_model_claude', $settings['ai_model_claude'] ?? 'claude-3-5-haiku-20241022') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ai_rate_limit_ms') }}</label>
+                    <input type="number" name="ai_rate_limit_ms" class="form-control" value="{{ old('ai_rate_limit_ms', $settings['ai_rate_limit_ms'] ?? 2000) }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ai_api_key') }}</label>
+                    <input type="password" name="ai_api_key" class="form-control" placeholder="{{ __('seo-engine::seo_engine.ai_api_key_hint') }}" autocomplete="new-password">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.prompt_template_content') }}</label>
+                    <textarea name="prompt_template_content" class="form-control font-monospace" rows="12">{{ old('prompt_template_content', $settings['prompt_template_content'] ?? '') }}</textarea>
+                    <div class="form-text">{{ __('seo-engine::seo_engine.prompt_template_content_help') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
             <div class="card-header"><h5 class="mb-0">{{ __('seo-engine::seo_engine.robots_txt') }}</h5></div>
             <div class="card-body">
                 <textarea name="robots_txt" class="form-control font-monospace" rows="8">{{ old('robots_txt', $settings['robots_txt'] ?? '') }}</textarea>

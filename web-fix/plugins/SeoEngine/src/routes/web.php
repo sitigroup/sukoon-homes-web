@@ -1,5 +1,6 @@
 <?php
 
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineContentReviewController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineDashboardController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEnginePagesController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineRedirectsController;
@@ -36,4 +37,9 @@ Route::prefix('seo-engine')
         Route::post('/pages/bulk', [SeoEnginePagesController::class, 'bulk'])->name('pages.bulk');
         Route::get('/pages/{page}/edit', [SeoEnginePagesController::class, 'edit'])->name('pages.edit');
         Route::put('/pages/{page}', [SeoEnginePagesController::class, 'update'])->name('pages.update');
+
+        Route::get('/content-review', [SeoEngineContentReviewController::class, 'index'])->name('content.index');
+        Route::post('/content-review/{page}/approve', [SeoEngineContentReviewController::class, 'approve'])->name('content.approve');
+        Route::post('/content-review/{page}/regenerate', [SeoEngineContentReviewController::class, 'regenerate'])->name('content.regenerate');
+        Route::post('/content-review/{page}/lock', [SeoEngineContentReviewController::class, 'lock'])->name('content.lock');
     });

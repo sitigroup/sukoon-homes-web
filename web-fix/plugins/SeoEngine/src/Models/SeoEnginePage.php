@@ -22,6 +22,7 @@ class SeoEnginePage extends Model
         'is_indexable',
         'lock_content',
         'content_generated_at',
+        'content_review_status',
     ];
 
     protected $casts = [

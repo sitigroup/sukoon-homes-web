@@ -72,6 +72,11 @@ class SeoEngineSettingsService
             'cron_last_generate_content_at' => null,
             'indexnow_key' => '',
             'indexnow_log' => [],
+            'ai_provider' => 'gemini',
+            'ai_model_claude' => 'claude-3-5-haiku-20241022',
+            'ai_api_key' => '',
+            'ai_rate_limit_ms' => 2000,
+            'prompt_template_content' => '',
         ];
     }
 

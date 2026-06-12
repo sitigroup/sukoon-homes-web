@@ -30,6 +30,11 @@
     @endif
     @if(function_exists('has_permissions') && has_permissions('pages', 'seo_engine'))
         <li class="nav-item">
+            <a class="nav-link {{ $active === 'content' ? 'active' : '' }}" href="{{ route('seo-engine.content.index') }}">
+                {{ __('seo-engine::seo_engine.nav_content_review') }}
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link {{ $active === 'pages' ? 'active' : '' }}" href="{{ route('seo-engine.pages.index') }}">
                 {{ __('seo-engine::seo_engine.nav_pages') }}
             </a>

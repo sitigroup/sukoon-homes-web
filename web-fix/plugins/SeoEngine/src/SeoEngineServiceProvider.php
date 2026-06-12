@@ -5,6 +5,7 @@ namespace App\Plugins\SeoEngine;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use App\Plugins\SeoEngine\Console\BuildSitemapsCommand;
+use App\Plugins\SeoEngine\Console\GenerateContentCommand;
 use App\Plugins\SeoEngine\Console\GeneratePagesCommand;
 use App\Plugins\SeoEngine\Observers\ArticleSlugObserver;
 use App\Plugins\SeoEngine\Observers\ProjectSlugObserver;
@@ -32,6 +33,7 @@ class SeoEngineServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Plugins\SeoEngine\Services\SeoEngineRentSitemapService::class);
         $this->app->singleton(SeoEnginePageDataService::class);
         $this->app->singleton(SeoEnginePageTouchService::class);
+        $this->app->singleton(\App\Plugins\SeoEngine\Services\SeoEngineContentService::class);
     }
 
     public function boot(): void
@@ -61,7 +63,7 @@ class SeoEngineServiceProvider extends ServiceProvider
             \App\Models\Property::observe(PropertySeoPageObserver::class);
         }
 
-        $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class]);
+        $this->commands([GeneratePagesCommand::class, BuildSitemapsCommand::class, GenerateContentCommand::class]);
 
         if ($this->app->runningInConsole()) {
             $this->app->booted(function () {
