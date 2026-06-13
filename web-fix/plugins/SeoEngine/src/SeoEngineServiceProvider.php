@@ -19,6 +19,7 @@ use App\Plugins\SeoEngine\Services\SeoEnginePageTouchService;
 use App\Plugins\SeoEngine\Services\SeoEngineRedirectService;
 use App\Plugins\SeoEngine\Services\SeoEngineSettingsService;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Pagination\Paginator;
 
 class SeoEngineServiceProvider extends ServiceProvider
 {
@@ -40,6 +41,9 @@ class SeoEngineServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Admin panel uses Bootstrap 5 — Laravel defaults to Tailwind pagination SVGs without CSS.
+        Paginator::useBootstrapFive();
+
         $base = app_path('Plugins/SeoEngine');
 
         $this->loadMigrationsFrom($base . '/database/migrations');
