@@ -132,9 +132,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($pages->hasPages())
-                <div class="card-footer">{{ $pages->links() }}</div>
-            @endif
+            @include('seo-engine::admin.seo-engine.partials.pagination', ['paginator' => $pages])
         </div>
     </form>
 </section>

@@ -86,9 +86,7 @@
                 </tbody>
             </table>
         </div>
-        @if($leads->hasPages())
-            <div class="card-footer">{{ $leads->links() }}</div>
-        @endif
+        @include('seo-engine::admin.seo-engine.partials.pagination', ['paginator' => $leads])
     </div>
 </section>
 @endsection

@@ -108,7 +108,7 @@
                     @endforelse
                 </tbody>
             </table>
-            {{ $redirects->links() }}
+            @include('seo-engine::admin.seo-engine.partials.pagination', ['paginator' => $redirects])
         </div>
     </div>
 </section>
