@@ -4,6 +4,7 @@ namespace App\Plugins\SeoEngine\Services;
 
 use App\Plugins\SeoEngine\Models\SeoEngineQaPage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class SeoEngineQaSitemapService
 {
@@ -38,8 +39,20 @@ class SeoEngineQaSitemapService
         $outDir = storage_path('app/seo-engine');
         File::ensureDirectoryExists($outDir, 0775, true);
         $path = $outDir . '/qa-guides.json';
-        File::put($path, json_encode($urls, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $payload = json_encode($urls, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-        return ['count' => count($urls), 'path' => $path];
+        try {
+            File::put($path, $payload);
+            @chmod($path, 0664);
+        } catch (\Throwable $e) {
+            Log::warning('SeoEngine QA sitemap export failed', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['count' => count($urls), 'path' => $path, 'written' => false];
+        }
+
+        return ['count' => count($urls), 'path' => $path, 'written' => true];
     }
 }

@@ -101,6 +101,8 @@ return [
     'qa_delete' => 'Delete',
     'qa_saved' => 'Q&A guide saved.',
     'qa_published' => 'Q&A guide published.',
+    'qa_unpublished' => 'Q&A guide saved as draft.',
+    'qa_sitemap_export_failed' => 'Guide saved, but qa-guides.json could not be written — check storage/app/seo-engine permissions.',
     'qa_deleted' => 'Q&A guide deleted.',
     'qa_question' => 'Question',
     'qa_direct_answer' => 'Direct answer',

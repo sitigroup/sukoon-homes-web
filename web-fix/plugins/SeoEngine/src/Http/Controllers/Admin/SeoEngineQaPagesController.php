@@ -57,7 +57,7 @@ class SeoEngineQaPagesController extends Controller
 
         SeoEngineQaPage::query()->create($validated);
         $this->bustQaCache($validated['category'], $validated['slug']);
-        $sitemap->export();
+        $this->exportQaSitemap($sitemap);
 
         return redirect()->route('seo-engine.qa.index')->with('success', __('seo-engine::seo_engine.qa_saved'));
     }
@@ -102,15 +102,18 @@ class SeoEngineQaPagesController extends Controller
 
         $oldCategory = $qaPage->category;
         $oldSlug = $qaPage->slug;
+        $wasPublished = $qaPage->status === 'published';
 
         $qaPage->update($validated);
         $this->bustQaCache($oldCategory, $oldSlug);
         $this->bustQaCache($validated['category'], $validated['slug']);
-        $sitemap->export();
+        $this->exportQaSitemap($sitemap);
 
-        $message = $validated['status'] === 'published'
-            ? __('seo-engine::seo_engine.qa_published')
-            : __('seo-engine::seo_engine.qa_saved');
+        $message = match (true) {
+            $validated['status'] === 'published' => __('seo-engine::seo_engine.qa_published'),
+            $wasPublished => __('seo-engine::seo_engine.qa_unpublished'),
+            default => __('seo-engine::seo_engine.qa_saved'),
+        };
 
         return redirect()
             ->route('seo-engine.qa.edit', $qaPage)
@@ -124,7 +127,7 @@ class SeoEngineQaPagesController extends Controller
         $slug = $qaPage->slug;
         $qaPage->delete();
         $this->bustQaCache($category, $slug);
-        $sitemap->export();
+        $this->exportQaSitemap($sitemap);
 
         return back()->with('success', __('seo-engine::seo_engine.qa_deleted'));
     }
@@ -199,5 +202,13 @@ class SeoEngineQaPagesController extends Controller
     {
         Cache::forget('seo_engine:api:qa:' . $category . ':' . $slug);
         Cache::forget('seo_engine:api:qa_sitemap');
+    }
+
+    private function exportQaSitemap(SeoEngineQaSitemapService $sitemap): void
+    {
+        $result = $sitemap->export();
+        if (($result['written'] ?? true) === false) {
+            session()->flash('warning', __('seo-engine::seo_engine.qa_sitemap_export_failed'));
+        }
     }
 }
