@@ -11,6 +11,7 @@ return [
     'regenerate_pages_done' => 'Page generator finished (pages + locality stats + rent sitemap).',
     'regenerate_sitemaps_done' => 'Rent sitemap export finished.',
     'nav_templates' => 'Templates',
+    'nav_static_pages_seo' => 'Static Pages SEO',
     'templates_title' => 'SEO Engine — Page Templates',
     'template_saved' => 'Template saved (previous versions kept, max 5).',
     'template_variables' => 'Variables',

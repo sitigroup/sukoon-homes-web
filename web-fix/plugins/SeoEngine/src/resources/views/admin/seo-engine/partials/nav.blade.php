@@ -33,6 +33,13 @@
             </a>
         </li>
     @endif
+    @if(function_exists('has_permissions') && has_permissions('read', 'seo_settings'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url('seo_settings') }}">
+                {{ __('seo-engine::seo_engine.nav_static_pages_seo') }}
+            </a>
+        </li>
+    @endif
     @if(function_exists('has_permissions') && has_permissions('pages', 'seo_engine'))
         <li class="nav-item">
             <a class="nav-link {{ $active === 'content-generate' ? 'active' : '' }}" href="{{ route('seo-engine.content-generate.index') }}">
