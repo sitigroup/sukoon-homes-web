@@ -1,8 +1,11 @@
 <?php
 
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineContentGenerateController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineContentReviewController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineDashboardController;
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineLeadsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEnginePagesController;
+use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEnginePerformanceController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineQaPagesController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineRedirectsController;
 use App\Plugins\SeoEngine\Http\Controllers\Admin\SeoEngineSettingsController;
@@ -43,6 +46,20 @@ Route::prefix('seo-engine')
         Route::post('/content-review/{page}/approve', [SeoEngineContentReviewController::class, 'approve'])->name('content.approve');
         Route::post('/content-review/{page}/regenerate', [SeoEngineContentReviewController::class, 'regenerate'])->name('content.regenerate');
         Route::post('/content-review/{page}/lock', [SeoEngineContentReviewController::class, 'lock'])->name('content.lock');
+
+        Route::get('/content-generate', [SeoEngineContentGenerateController::class, 'index'])->name('content-generate.index');
+        Route::post('/content-generate/confirm', [SeoEngineContentGenerateController::class, 'confirm'])->name('content-generate.confirm');
+        Route::post('/content-generate/run', [SeoEngineContentGenerateController::class, 'run'])->name('content-generate.run');
+
+        Route::get('/leads', [SeoEngineLeadsController::class, 'index'])->name('leads.index');
+        Route::get('/leads/export', [SeoEngineLeadsController::class, 'export'])->name('leads.export');
+        Route::put('/leads/{lead}', [SeoEngineLeadsController::class, 'update'])->name('leads.update');
+
+        Route::get('/performance', [SeoEnginePerformanceController::class, 'index'])->name('performance.index');
+        Route::get('/performance/gsc/connect', [SeoEnginePerformanceController::class, 'connectGsc'])->name('performance.gsc-connect');
+        Route::get('/performance/gsc/callback', [SeoEnginePerformanceController::class, 'gscCallback'])->name('performance.gsc-callback');
+        Route::post('/performance/gsc/sync', [SeoEnginePerformanceController::class, 'syncGsc'])->name('performance.gsc-sync');
+        Route::post('/performance/gsc/disconnect', [SeoEnginePerformanceController::class, 'disconnectGsc'])->name('performance.gsc-disconnect');
 
         Route::get('/qa', [SeoEngineQaPagesController::class, 'index'])->name('qa.index');
         Route::get('/qa/create', [SeoEngineQaPagesController::class, 'create'])->name('qa.create');

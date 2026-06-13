@@ -1,5 +1,6 @@
 <?php
 
+use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEngineLeadApiController;
 use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEngine404LogApiController;
 use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEngineBotFilesApiController;
 use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEnginePageApiController;
@@ -9,6 +10,7 @@ use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEngineSettingsApiController;
 use App\Plugins\SeoEngine\Http\Controllers\Api\SeoEngineSitemapApiController;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/seo-engine/leads', [SeoEngineLeadApiController::class, 'store']);
 Route::get('/seo-engine/settings', [SeoEngineSettingsApiController::class, 'show']);
 Route::get('/seo-engine/redirect', [SeoEngineRedirectApiController::class, 'show']);
 Route::get('/seo-engine/rent-sitemap', [SeoEngineSitemapApiController::class, 'rentPages']);

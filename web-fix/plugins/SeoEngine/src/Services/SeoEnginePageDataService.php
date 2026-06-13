@@ -10,6 +10,7 @@ use App\Plugins\SeoEngine\Models\SeoEngineLocalityStat;
 use App\Plugins\SeoEngine\Models\SeoEnginePage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SeoEnginePageDataService
 {
@@ -71,6 +72,7 @@ class SeoEnginePageDataService
         $budgetLinks = $this->linkSet($page, 'budget', 12);
         $locality = $this->localityStats($filters);
         $topSibling = $siblings[0] ?? null;
+        $areaContext = $this->areaContext($filters);
 
         return [
             'page' => $this->pageRow($page),
@@ -84,6 +86,8 @@ class SeoEnginePageDataService
             'locality_stats' => $locality,
             'nearby_places' => $this->nearbyPlaces($filters),
             'comparison' => $this->comparison($page, $topSibling),
+            'area' => $areaContext,
+            'map' => $this->mapData($listings, $areaContext),
         ];
     }
 
@@ -115,19 +119,31 @@ class SeoEnginePageDataService
             return [];
         }
 
+        $select = [
+            'propertys.id',
+            'propertys.slug_id',
+            'propertys.title',
+            'propertys.price',
+            'propertys.propery_type',
+            'propertys.rentduration',
+            'propertys.state',
+            'propertys.updated_at',
+            DB::raw('COALESCE(lc.name, propertys.city) as city'),
+            DB::raw('la.name as area'),
+        ];
+
+        if (Schema::hasColumn('propertys', 'title_image')) {
+            $select[] = 'propertys.title_image';
+        }
+        if (Schema::hasColumn('propertys', 'latitude')) {
+            $select[] = 'propertys.latitude';
+        }
+        if (Schema::hasColumn('propertys', 'longitude')) {
+            $select[] = 'propertys.longitude';
+        }
+
         $q = Property::query()
-            ->select([
-                'propertys.id',
-                'propertys.slug_id',
-                'propertys.title',
-                'propertys.price',
-                'propertys.propery_type',
-                'propertys.rentduration',
-                'propertys.state',
-                'propertys.updated_at',
-                DB::raw('COALESCE(lc.name, propertys.city) as city'),
-                DB::raw('la.name as area'),
-            ])
+            ->select($select)
             ->join('area_listing_property_locations as apl', 'apl.property_id', '=', 'propertys.id')
             ->leftJoin('area_listing_cities as lc', 'lc.id', '=', 'apl.city_id')
             ->leftJoin('area_listing_areas as la', 'la.id', '=', 'apl.area_id')
@@ -140,7 +156,7 @@ class SeoEnginePageDataService
         $rows = $q->orderByDesc('propertys.updated_at')->limit($limit)->get();
 
         return $rows->map(function ($p) {
-            return [
+            $row = [
                 'id' => $p->id,
                 'slug_id' => $p->slug_id,
                 'title' => $p->title,
@@ -151,7 +167,18 @@ class SeoEnginePageDataService
                 'area' => $p->area ?? null,
                 'state' => $p->state,
                 'updated_at' => optional($p->updated_at)->toIso8601String(),
+                'verified' => true,
             ];
+
+            if (isset($p->title_image)) {
+                $row['title_image'] = $p->title_image;
+            }
+            if (isset($p->latitude) && isset($p->longitude) && $p->latitude && $p->longitude) {
+                $row['latitude'] = (float) $p->latitude;
+                $row['longitude'] = (float) $p->longitude;
+            }
+
+            return $row;
         })->values()->all();
     }
 
@@ -393,5 +420,86 @@ class SeoEnginePageDataService
         }
 
         return $path;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return array<string, mixed>|null
+     */
+    private function areaContext(array $filters): ?array
+    {
+        $areaId = $filters['area_id'] ?? null;
+        if (! $areaId || ! class_exists(Area::class)) {
+            return null;
+        }
+
+        $area = Area::query()->find($areaId);
+        if (! $area) {
+            return null;
+        }
+
+        $cityName = null;
+        if (class_exists(City::class) && ! empty($area->city_id)) {
+            $cityName = City::query()->where('id', $area->city_id)->value('name');
+        }
+
+        $heroImages = (array) $this->settings->get('area_hero_images', []);
+        $heroUrl = $heroImages[(string) $areaId] ?? $heroImages[$areaId] ?? null;
+        if (! is_string($heroUrl) || $heroUrl === '') {
+            $heroUrl = (string) $this->settings->get('default_area_hero_url', '');
+        }
+
+        $lat = null;
+        $lng = null;
+        if (Schema::hasColumn('area_listing_areas', 'latitude')) {
+            $lat = $area->latitude ?? null;
+            $lng = $area->longitude ?? null;
+        }
+
+        return [
+            'area_id' => (int) $areaId,
+            'sub_area_id' => isset($filters['sub_area_id']) ? (int) $filters['sub_area_id'] : null,
+            'area_name' => $area->name,
+            'city_name' => $cityName,
+            'hero_image_url' => is_string($heroUrl) && $heroUrl !== '' ? $heroUrl : null,
+            'latitude' => $lat !== null ? (float) $lat : null,
+            'longitude' => $lng !== null ? (float) $lng : null,
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $listings
+     * @param  array<string, mixed>|null  $areaContext
+     * @return array{center:array{lat:float,lng:float}|null,pins:list<array{lat:float,lng:float,label:string}>}
+     */
+    private function mapData(array $listings, ?array $areaContext): array
+    {
+        $pins = [];
+        foreach ($listings as $listing) {
+            if (! isset($listing['latitude'], $listing['longitude'])) {
+                continue;
+            }
+            $pins[] = [
+                'lat' => (float) $listing['latitude'],
+                'lng' => (float) $listing['longitude'],
+                'label' => (string) ($listing['title'] ?? 'Listing'),
+            ];
+        }
+
+        $center = null;
+        if ($pins !== []) {
+            $center = [
+                'lat' => array_sum(array_column($pins, 'lat')) / count($pins),
+                'lng' => array_sum(array_column($pins, 'lng')) / count($pins),
+            ];
+        } elseif ($areaContext && isset($areaContext['latitude'], $areaContext['longitude'])
+            && $areaContext['latitude'] && $areaContext['longitude']) {
+            $center = [
+                'lat' => (float) $areaContext['latitude'],
+                'lng' => (float) $areaContext['longitude'],
+            ];
+        }
+
+        return ['center' => $center, 'pins' => array_slice($pins, 0, 12)];
     }
 }

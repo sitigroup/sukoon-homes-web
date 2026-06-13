@@ -189,6 +189,60 @@
         </div>
 
         <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">{{ __('seo-engine::seo_engine.phase_c_leads') }}</h5></div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.lead_notify_phone') }}</label>
+                    <input type="text" name="lead_notify_phone" class="form-control" value="{{ old('lead_notify_phone', $settings['lead_notify_phone'] ?? '') }}" placeholder="+91…">
+                    <div class="form-text">{{ __('seo-engine::seo_engine.lead_notify_phone_help') }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.default_area_hero_url') }}</label>
+                    <input type="url" name="default_area_hero_url" class="form-control" value="{{ old('default_area_hero_url', $settings['default_area_hero_url'] ?? '') }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.area_hero_images') }}</label>
+                    <textarea name="area_hero_images_json" class="form-control font-monospace" rows="4">{{ old('area_hero_images_json', json_encode($settings['area_hero_images'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) }}</textarea>
+                    <div class="form-text">{{ __('seo-engine::seo_engine.area_hero_images_help') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">Google Search Console</h5></div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.gsc_property') }}</label>
+                    <input type="text" name="gsc_property" class="form-control" value="{{ old('gsc_property', $settings['gsc_property'] ?? '') }}" placeholder="sc-domain:homes.sukoon.group">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.gsc_client_id') }}</label>
+                    <input type="text" name="gsc_client_id" class="form-control" value="{{ old('gsc_client_id', $settings['gsc_client_id'] ?? '') }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.gsc_client_secret') }}</label>
+                    <input type="password" name="gsc_client_secret" class="form-control" placeholder="Leave blank to keep existing" autocomplete="new-password">
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">GA4</h5></div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ __('seo-engine::seo_engine.ga4_measurement_id') }}</label>
+                    <input type="text" name="ga4_measurement_id" class="form-control" value="{{ old('ga4_measurement_id', $settings['ga4_measurement_id'] ?? '') }}" placeholder="G-XXXXXXXX">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="ga4_enabled" value="1" id="ga4_enabled" @checked(old('ga4_enabled', $settings['ga4_enabled'] ?? false))>
+                        <label class="form-check-label" for="ga4_enabled">{{ __('seo-engine::seo_engine.ga4_enabled') }}</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
             <div class="card-header"><h5 class="mb-0">{{ __('seo-engine::seo_engine.robots_txt') }}</h5></div>
             <div class="card-body">
                 <textarea name="robots_txt" class="form-control font-monospace" rows="8">{{ old('robots_txt', $settings['robots_txt'] ?? '') }}</textarea>

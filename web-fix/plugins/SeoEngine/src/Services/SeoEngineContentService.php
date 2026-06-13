@@ -23,6 +23,79 @@ class SeoEngineContentService
     }
 
     /**
+     * Generate content for explicitly selected page IDs (admin-confirmed runs only).
+     *
+     * @param  list<int>  $pageIds
+     * @return array{generated:int,skipped:int,failed:int,fallback:int,paths:list<string>,tokens:array{prompt:int,completion:int,total:int}}
+     */
+    public function generateSelected(array $pageIds, bool $force = true, ?string $promptTemplate = null): array
+    {
+        $pageIds = array_values(array_unique(array_filter(array_map('intval', $pageIds))));
+        if ($pageIds === []) {
+            return [
+                'generated' => 0,
+                'skipped' => 0,
+                'failed' => 0,
+                'fallback' => 0,
+                'paths' => [],
+                'tokens' => ['prompt' => 0, 'completion' => 0, 'total' => 0],
+            ];
+        }
+
+        $pages = SeoEnginePage::query()
+            ->whereIn('id', $pageIds)
+            ->where('lock_content', false)
+            ->orderBy('path')
+            ->get();
+
+        $stats = ['generated' => 0, 'skipped' => 0, 'failed' => 0, 'fallback' => 0, 'paths' => [], 'tokens' => ['prompt' => 0, 'completion' => 0, 'total' => 0]];
+        $provider = $this->provider();
+        $delayMs = max(0, (int) $this->settings->get('ai_rate_limit_ms', 2000));
+
+        foreach ($pages as $page) {
+            if (! $this->eligibleForAiContent($page)) {
+                $this->applyTemplateFallback($page);
+                $stats['fallback']++;
+
+                continue;
+            }
+
+            if (! $force && ! $this->needsGeneration($page)) {
+                $stats['skipped']++;
+
+                continue;
+            }
+
+            $ok = $this->generateForPage($page, $provider, $stats, $promptTemplate);
+            if ($ok) {
+                $stats['generated']++;
+                $stats['paths'][] = $page->path;
+            } else {
+                $stats['failed']++;
+            }
+
+            if ($delayMs > 0) {
+                usleep($delayMs * 1000);
+            }
+        }
+
+        $this->settings->set('cron_last_generate_content_at', now()->toIso8601String(), 'cron');
+
+        return $stats;
+    }
+
+    public function promptTemplateForAdmin(?string $override = null): string
+    {
+        if ($override !== null && trim($override) !== '') {
+            return $override;
+        }
+
+        $fromSettings = trim((string) $this->settings->get('prompt_template_content', ''));
+
+        return $fromSettings !== '' ? $fromSettings : $this->defaultPromptTemplate();
+    }
+
+    /**
      * @param  list<string>|null  $paths  Limit to these paths; null = all eligible pages
      * @return array{generated:int,skipped:int,failed:int,fallback:int,paths:list<string>}
      */
@@ -85,8 +158,12 @@ class SeoEngineContentService
         return $stats;
     }
 
-    public function generateForPage(SeoEnginePage $page, ?SeoEngineAiProviderInterface $provider = null, ?array &$stats = null): bool
-    {
+    public function generateForPage(
+        SeoEnginePage $page,
+        ?SeoEngineAiProviderInterface $provider = null,
+        ?array &$stats = null,
+        ?string $promptTemplate = null
+    ): bool {
         if ($page->lock_content) {
             return false;
         }
@@ -98,7 +175,7 @@ class SeoEngineContentService
         }
 
         $provider ??= $this->provider();
-        $prompt = $this->buildPrompt($page);
+        $prompt = $this->buildPrompt($page, $promptTemplate);
         $attempts = 3;
         $lastError = 'unknown';
 
@@ -209,12 +286,9 @@ class SeoEngineContentService
         return $drift > self::DRIFT_THRESHOLD;
     }
 
-    private function buildPrompt(SeoEnginePage $page): string
+    private function buildPrompt(SeoEnginePage $page, ?string $promptTemplate = null): string
     {
-        $template = (string) $this->settings->get('prompt_template_content', '');
-        if (trim($template) === '') {
-            $template = $this->defaultPromptTemplate();
-        }
+        $template = $this->promptTemplateForAdmin($promptTemplate);
         $payload = $this->pageData->getByPath($page->path) ?? [];
         $facts = $this->buildFacts($page, $payload);
 

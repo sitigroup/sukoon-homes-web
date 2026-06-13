@@ -4,6 +4,7 @@ namespace App\Plugins\SeoEngine\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Plugins\SeoEngine\Models\SeoEnginePage;
+use App\Plugins\SeoEngine\Services\SeoEngineGscService;
 use App\Plugins\SeoEngine\Services\SeoEnginePageDataService;
 use App\Plugins\SeoEngine\Services\SeoEnginePageGeneratorService;
 use App\Plugins\SeoEngine\Services\SeoEngineTemplateService;
@@ -21,7 +22,7 @@ class SeoEnginePagesController extends Controller
         }
     }
 
-    public function index(Request $request): View
+    public function index(Request $request, SeoEngineGscService $gsc): View
     {
         $this->denyUnlessPages();
 
@@ -48,8 +49,11 @@ class SeoEnginePagesController extends Controller
             ->withQueryString();
 
         $types = SeoEnginePage::query()->distinct()->orderBy('page_type')->pluck('page_type');
+        $gscPages = (array) (($gsc->dashboardMetrics()['connected'] ?? false)
+            ? (app(\App\Plugins\SeoEngine\Services\SeoEngineSettingsService::class)->get('gsc_cache')['pages'] ?? [])
+            : []);
 
-        return view('seo-engine::admin.seo-engine.pages.index', compact('pages', 'q', 'type', 'indexable', 'content', 'types'));
+        return view('seo-engine::admin.seo-engine.pages.index', compact('pages', 'q', 'type', 'indexable', 'content', 'types', 'gscPages'));
     }
 
     public function edit(SeoEnginePage $page): View
@@ -102,7 +106,7 @@ class SeoEnginePagesController extends Controller
         $this->denyUnlessPages();
 
         $validated = $request->validate([
-            'action' => ['required', 'in:regenerate_meta,request_content'],
+            'action' => ['required', 'in:regenerate_meta'],
             'ids' => ['required', 'array'],
             'ids.*' => ['integer'],
         ]);
@@ -127,11 +131,6 @@ class SeoEnginePagesController extends Controller
                     'meta_description' => $meta['meta_description'],
                     'listing_count' => $metrics['count'],
                 ]);
-                $data->clearPageCache($page->path);
-                $count++;
-            }
-            if ($validated['action'] === 'request_content' && ! $page->lock_content) {
-                $page->update(['content_generated_at' => null]);
                 $data->clearPageCache($page->path);
                 $count++;
             }

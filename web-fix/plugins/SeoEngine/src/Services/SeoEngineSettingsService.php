@@ -152,6 +152,8 @@ class SeoEngineSettingsService
             'budget_bands' => $all['budget_bands'] ?? [],
             'schema_toggles' => $all['schema_toggles'] ?? [],
             'ai_bot_policy' => $all['ai_bot_policy'] ?? [],
+            'ga4_enabled' => (bool) ($all['ga4_enabled'] ?? false),
+            'ga4_measurement_id' => $all['ga4_measurement_id'] ?? null,
         ];
     }
 

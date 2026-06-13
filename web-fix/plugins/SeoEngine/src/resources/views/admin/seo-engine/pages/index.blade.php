@@ -52,6 +52,7 @@
                 <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">{{ __('seo-engine::seo_engine.filter') }}</button>
                     <a href="{{ route('seo-engine.pages.export') }}" class="btn btn-outline-secondary">{{ __('seo-engine::seo_engine.export_csv') }}</a>
+                    <a href="{{ route('seo-engine.content-generate.index') }}" class="btn btn-outline-primary">{{ __('seo-engine::seo_engine.nav_content_generate') }}</a>
                 </div>
             </form>
         </div>
@@ -62,9 +63,8 @@
         <div class="card">
             <div class="card-header d-flex flex-wrap gap-2 align-items-center">
                 <h5 class="mb-0 me-auto">{{ __('seo-engine::seo_engine.pages_list') }}</h5>
-                <select name="action" class="form-select form-select-sm" style="max-width:200px" required>
+                <select name="action" class="form-select form-select-sm" style="max-width:220px" required>
                     <option value="regenerate_meta">{{ __('seo-engine::seo_engine.bulk_regenerate_meta') }}</option>
-                    <option value="request_content">{{ __('seo-engine::seo_engine.bulk_request_content') }}</option>
                 </select>
                 <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('seo-engine::seo_engine.bulk_apply') }}</button>
             </div>
@@ -79,6 +79,9 @@
                             <th>Quality</th>
                             <th>Index</th>
                             <th>Content</th>
+                            @if(!empty($gscPages))
+                            <th title="Google Search Console (28d)">GSC</th>
+                            @endif
                             <th></th>
                         </tr>
                     </thead>
@@ -92,6 +95,14 @@
                                 <td>{{ $page->quality_score }}</td>
                                 <td>{{ $page->is_indexable ? 'Yes' : 'No' }}</td>
                                 <td>{{ $page->intro_html ? 'Yes' : '—' }}</td>
+                                @if(!empty($gscPages))
+                                @php $gsc = $gscPages[$page->path] ?? null; @endphp
+                                <td class="small text-muted">
+                                    @if($gsc)
+                                        {{ $gsc['clicks'] }}/{{ $gsc['impressions'] }}<br>@if($gsc['position'])#{{ $gsc['position'] }}@endif
+                                    @else — @endif
+                                </td>
+                                @endif
                                 <td><a href="{{ route('seo-engine.pages.edit', $page) }}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
                             </tr>
                         @empty

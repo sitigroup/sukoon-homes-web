@@ -8,5 +8,6 @@ return [
         'redirects' => 'Manage SEO Engine redirects',
         'templates' => 'Manage SEO Engine page templates',
         'pages' => 'Manage SEO Engine page registry',
+        'leads' => 'View SEO Engine rental leads',
     ],
 ];

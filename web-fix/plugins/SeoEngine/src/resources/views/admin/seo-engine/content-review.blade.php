@@ -18,10 +18,11 @@
     @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
     @if(session('error')) <div class="alert alert-danger">{{ session('error') }}</div> @endif
 
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
         <a href="{{ route('seo-engine.content.index', ['status' => 'pending']) }}" class="btn btn-sm {{ $status === 'pending' ? 'btn-primary' : 'btn-outline-primary' }}">Pending</a>
         <a href="{{ route('seo-engine.content.index', ['status' => 'approved']) }}" class="btn btn-sm {{ $status === 'approved' ? 'btn-primary' : 'btn-outline-primary' }}">Approved</a>
         <a href="{{ route('seo-engine.content.index', ['status' => 'all']) }}" class="btn btn-sm {{ $status === 'all' ? 'btn-primary' : 'btn-outline-primary' }}">All with content</a>
+        <a href="{{ route('seo-engine.content-generate.index') }}" class="btn btn-sm btn-outline-secondary ms-auto">{{ __('seo-engine::seo_engine.nav_content_generate') }}</a>
     </div>
 
     <div class="card">

@@ -616,4 +616,74 @@ php artisan seo-engine:build-sitemaps
 
 ---
 
-**✅ SEO EXECUTE COMPLETE — All 11 tasks delivered. Human review recommended for Q&A draft finalisation and remaining 6 AI content pages in pending review.**
+## Phase C — Richer pages + leads + analytics
+
+**Status:** ✅ LIVE (2026-06-13) — C1/C2 verified on production; C3/C4 await admin credentials
+
+**Spec:** `SUKOON_SEO_PHASE_C.md` (if present in repo)
+
+### C1 — Richer `/rent/` page design
+
+| Staging | Deploy target |
+|---------|---------------|
+| `web-fix/seo-system/c1/RentPageView.jsx` | `src/plugins/seo-engine/RentPageView.jsx` |
+| `web-fix/seo-system/c1/RentPageComponents.jsx` | `src/plugins/seo-engine/RentPageComponents.jsx` |
+| `web-fix/seo-system/c1/rentLayout.js` | `src/plugins/seo-engine/rentLayout.js` |
+| `web-fix/seo-system/c1/rent-[[...segments]].jsx` | `pages/rent/[[...segments]].jsx` |
+
+Sections (top → bottom): shell header/footer, hero + **ShellSearchBar**, trust strip, rent insight + sparkline, listing grid (photos + verified badge), lazy OSM map, nearby landmarks, lead capture (×2: alert modal + bottom band), AI intro/FAQ, internal link chips. Zero listings → lead form primary. Content width uses `RentShellContainer` (`max-w-6xl`) aligned with shell header/footer at all breakpoints.
+
+### C2 — Lead capture
+
+- Migration: `seo_engine_leads`
+- API: `POST /api/seo-engine/leads` (rate limit 5/hr/IP, honeypot `website`)
+- Admin: **SEO Engine → Leads** (filter, status, CSV export)
+- WhatsApp events: `seo_engine_lead` (team), `seo_engine_lead_auto_reply` (renter) — map templates in WhatsApp admin
+- Settings: team notify phone, area hero JSON, default hero URL
+
+### C3 — GSC performance dashboard
+
+- **SEO Engine → Performance** — GSC OAuth connect, daily cache, top queries/pages, movers, low-CTR alerts
+- Per-page GSC column on Pages admin when cache populated
+- Settings: GSC property + OAuth client ID/secret
+
+### C4 — GA4
+
+- Settings: measurement ID + enable toggle
+- `RentGa4Tracker` — `page_view`, `listing_click`, `lead_submit` events on `/rent/`
+
+### Deploy
+
+```bash
+bash web-fix/seo-system/c1/deploy-c1-remote.sh
+```
+
+Backup first: `bash scripts/final-sukoon-complete-backup.sh`
+
+### VERIFY checklist (post-deploy)
+
+- [x] `/rent/barmer/` — all sections render (2026-06-13)
+- [x] `__NEXT_DATA__` structured data: `BreadcrumbList`, `ItemList`, `FAQPage` (+ Q/A nodes)
+- [x] Lead API `POST /api/seo-engine/leads` → HTTP 201, row id **1** in `seo_engine_leads` (`Phase C Verify`)
+- [x] SeoEngine plugin + `WhatsappEventCatalog` (`seo_engine_lead`, `seo_engine_lead_auto_reply`) synced to server
+- [x] **Lead notify phone** set to `+919990687827`
+- [ ] **You:** WhatsApp admin → map templates to `seo_engine_lead` + `seo_engine_lead_auto_reply`
+- [ ] **You:** SEO Engine → Leads — confirm UI + CSV export
+- [ ] **You:** SEO Engine → Performance → GSC OAuth (property + client ID/secret in Settings)
+- [ ] **You:** SEO Engine → Settings → GA4 measurement ID + enable → DebugView events
+- [ ] Mobile PageSpeed ≥85 (Cloudflare) — optional spot-check
+
+### Human config (admin-homes)
+
+| Setting | Where | Status |
+|---------|--------|--------|
+| Lead notify phone | SEO Engine → Settings | **+919990687827** |
+| GSC property + OAuth | SEO Engine → Settings → Performance | Not set |
+| GA4 `G-…` + enable | SEO Engine → Settings | Disabled |
+| WhatsApp templates | WhatsApp → Events | Catalog deployed; templates unmapped |
+
+Verify scripts (server): `web-fix/seo-system/c1/verify-phase-c.php`, `verify-phase-c-admin.php`
+
+---
+
+**✅ SEO EXECUTE COMPLETE — Phase C live on `/rent/barmer/`. Finish C3/C4 + WhatsApp mapping in admin when credentials are ready.**

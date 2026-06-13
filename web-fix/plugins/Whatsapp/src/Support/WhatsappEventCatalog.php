@@ -56,6 +56,18 @@ class WhatsappEventCatalog
                 'platform_trigger' => 'Renewal reminder schedule / renewal agreement created',
                 'wired' => true,
             ],
+            'seo_engine_lead' => [
+                'display_name' => 'SEO Rental Lead (team)',
+                'description' => 'Notifies team when a renter submits a lead form on a /rent/ SEO page.',
+                'platform_trigger' => 'POST /api/seo-engine/leads',
+                'wired' => true,
+            ],
+            'seo_engine_lead_auto_reply' => [
+                'display_name' => 'SEO Lead Auto-Reply',
+                'description' => 'Optional auto-reply to renter after lead form submit.',
+                'platform_trigger' => 'POST /api/seo-engine/leads',
+                'wired' => true,
+            ],
             'verification_completed' => [
                 'display_name' => 'Verification Completed',
                 'description' => 'Trust verification completed.',

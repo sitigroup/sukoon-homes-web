@@ -83,6 +83,14 @@ class SeoEngineSettingsController extends Controller
             'ai_rate_limit_ms' => ['nullable', 'integer', 'min:0', 'max:60000'],
             'ai_content_min_listings' => ['nullable', 'integer', 'min:0', 'max:100'],
             'prompt_template_content' => ['nullable', 'string', 'max:20000'],
+            'lead_notify_phone' => ['nullable', 'string', 'max:32'],
+            'area_hero_images_json' => ['nullable', 'string', 'max:50000'],
+            'default_area_hero_url' => ['nullable', 'url', 'max:512'],
+            'gsc_property' => ['nullable', 'string', 'max:512'],
+            'gsc_client_id' => ['nullable', 'string', 'max:512'],
+            'gsc_client_secret' => ['nullable', 'string', 'max:512'],
+            'ga4_measurement_id' => ['nullable', 'string', 'max:32', 'regex:/^(G-[A-Z0-9]+)?$/'],
+            'ga4_enabled' => ['nullable', 'boolean'],
         ]);
 
         $sameAs = array_values(array_filter($validated['same_as'] ?? []));
@@ -134,7 +142,25 @@ class SeoEngineSettingsController extends Controller
             'ai_rate_limit_ms' => (int) ($validated['ai_rate_limit_ms'] ?? $settings->get('ai_rate_limit_ms', 2000)),
             'ai_content_min_listings' => (int) ($validated['ai_content_min_listings'] ?? $settings->get('ai_content_min_listings', 1)),
             'prompt_template_content' => $validated['prompt_template_content'] ?? '',
+            'lead_notify_phone' => $validated['lead_notify_phone'] ?? '',
+            'default_area_hero_url' => $validated['default_area_hero_url'] ?? '',
+            'gsc_property' => $validated['gsc_property'] ?? '',
+            'gsc_client_id' => $validated['gsc_client_id'] ?? '',
+            'ga4_measurement_id' => $validated['ga4_measurement_id'] ?? '',
+            'ga4_enabled' => $request->boolean('ga4_enabled'),
         ]);
+
+        $heroJson = trim((string) ($validated['area_hero_images_json'] ?? ''));
+        if ($heroJson !== '') {
+            $decoded = json_decode($heroJson, true);
+            if (is_array($decoded)) {
+                $settings->set('area_hero_images', $decoded, 'media');
+            }
+        }
+
+        if (! empty($validated['gsc_client_secret'])) {
+            $settings->set('gsc_client_secret', $validated['gsc_client_secret'], 'secrets');
+        }
 
         if (! empty($validated['ai_api_key'])) {
             $settings->set('ai_api_key', $validated['ai_api_key'], 'secrets');
