@@ -47,6 +47,7 @@ Route::prefix('seo-engine')
         Route::get('/qa', [SeoEngineQaPagesController::class, 'index'])->name('qa.index');
         Route::get('/qa/create', [SeoEngineQaPagesController::class, 'create'])->name('qa.create');
         Route::post('/qa', [SeoEngineQaPagesController::class, 'store'])->name('qa.store');
+        Route::get('/qa/{qaPage}', [SeoEngineQaPagesController::class, 'show'])->name('qa.show');
         Route::get('/qa/{qaPage}/edit', [SeoEngineQaPagesController::class, 'edit'])->name('qa.edit');
         Route::put('/qa/{qaPage}', [SeoEngineQaPagesController::class, 'update'])->name('qa.update');
         Route::delete('/qa/{qaPage}', [SeoEngineQaPagesController::class, 'destroy'])->name('qa.destroy');

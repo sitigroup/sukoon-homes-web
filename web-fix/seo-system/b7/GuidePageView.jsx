@@ -1,5 +1,5 @@
 import MetaData from '@/components/meta/MetaData';
-import CustomLink from '@/components/CustomLink';
+import CustomLink from '@/components/context/CustomLink';
 
 export default function GuidePageView({ payload, lang, structuredData, robots }) {
   const { page, breadcrumbs, related_rent_links: relatedLinks = [] } = payload;
@@ -9,6 +9,7 @@ export default function GuidePageView({ payload, lang, structuredData, robots })
       <MetaData
         title={page.title}
         description={page.meta_description}
+        pageName={`${page.path}?lang=${lang}`}
         structuredData={structuredData}
         robots={robots}
       />

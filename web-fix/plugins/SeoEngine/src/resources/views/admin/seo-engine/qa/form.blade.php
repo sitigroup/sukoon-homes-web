@@ -15,6 +15,7 @@
 @section('content')
 <section class="section pt-2">
     @include('seo-engine::admin.seo-engine.partials.nav', ['active' => 'qa'])
+    @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
 
     <form method="post" action="{{ $page->exists ? route('seo-engine.qa.update', $page) : route('seo-engine.qa.store') }}">
         @csrf

@@ -1,10 +1,13 @@
 const apiBase = () =>
-  (process.env.NEXT_PUBLIC_API_URL || 'https://admin-homes.sukoon.group/api/').replace(/\/?$/, '/');
+  `${process.env.NEXT_PUBLIC_API_URL || ''}${process.env.NEXT_PUBLIC_END_POINT || '/api/'}`;
+
+const headers = () => ({ 'X-Active-Role': 'user' });
 
 export async function fetchGuidePage(category, slug) {
   const params = new URLSearchParams({ category, slug });
   const res = await fetch(`${apiBase()}seo-engine/qa-page?${params}`, {
-    headers: { Accept: 'application/json' },
+    headers: headers(),
+    cache: 'no-store',
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Guide API ${res.status}`);

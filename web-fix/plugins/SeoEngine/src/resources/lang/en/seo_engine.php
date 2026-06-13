@@ -100,6 +100,7 @@ return [
     'qa_edit' => 'Edit guide',
     'qa_delete' => 'Delete',
     'qa_saved' => 'Q&A guide saved.',
+    'qa_published' => 'Q&A guide published.',
     'qa_deleted' => 'Q&A guide deleted.',
     'qa_question' => 'Question',
     'qa_direct_answer' => 'Direct answer',

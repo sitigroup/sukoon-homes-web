@@ -7,6 +7,8 @@ use App\Plugins\SeoEngine\Models\SeoEngineQaPage;
 use App\Plugins\SeoEngine\Services\SeoEngineQaSitemapService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -54,6 +56,7 @@ class SeoEngineQaPagesController extends Controller
         $validated['slug'] = $this->uniqueSlug($validated['slug'], $validated['category']);
 
         SeoEngineQaPage::query()->create($validated);
+        $this->bustQaCache($validated['category'], $validated['slug']);
         $sitemap->export();
 
         return redirect()->route('seo-engine.qa.index')->with('success', __('seo-engine::seo_engine.qa_saved'));
@@ -66,22 +69,61 @@ class SeoEngineQaPagesController extends Controller
         return view('seo-engine::admin.seo-engine.qa.form', ['page' => $qaPage]);
     }
 
+    public function show(SeoEngineQaPage $qaPage): RedirectResponse
+    {
+        $this->denyUnlessPages();
+
+        return redirect()->route('seo-engine.qa.edit', $qaPage);
+    }
+
     public function update(Request $request, SeoEngineQaPage $qaPage, SeoEngineQaSitemapService $sitemap): RedirectResponse
     {
         $this->denyUnlessPages();
-        $validated = $this->validatePage($request);
+
+        $validator = Validator::make($request->all(), [
+            'question' => ['required', 'string', 'max:512'],
+            'direct_answer' => ['nullable', 'string', 'max:500'],
+            'body_html' => ['nullable', 'string', 'max:50000'],
+            'category' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],
+            'slug' => ['nullable', 'string', 'max:255', 'regex:/^[a-z0-9-]+$/'],
+            'status' => ['required', 'in:draft,published'],
+            'related_rent_links' => ['nullable', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('seo-engine.qa.edit', $qaPage)
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $validated = $this->normalizeValidated($validator->validated());
         $validated['slug'] = $this->uniqueSlug($validated['slug'], $validated['category'], $qaPage->id);
 
+        $oldCategory = $qaPage->category;
+        $oldSlug = $qaPage->slug;
+
         $qaPage->update($validated);
+        $this->bustQaCache($oldCategory, $oldSlug);
+        $this->bustQaCache($validated['category'], $validated['slug']);
         $sitemap->export();
 
-        return redirect()->route('seo-engine.qa.index')->with('success', __('seo-engine::seo_engine.qa_saved'));
+        $message = $validated['status'] === 'published'
+            ? __('seo-engine::seo_engine.qa_published')
+            : __('seo-engine::seo_engine.qa_saved');
+
+        return redirect()
+            ->route('seo-engine.qa.edit', $qaPage)
+            ->with('success', $message);
     }
 
     public function destroy(SeoEngineQaPage $qaPage, SeoEngineQaSitemapService $sitemap): RedirectResponse
     {
         $this->denyUnlessPages();
+        $category = $qaPage->category;
+        $slug = $qaPage->slug;
         $qaPage->delete();
+        $this->bustQaCache($category, $slug);
         $sitemap->export();
 
         return back()->with('success', __('seo-engine::seo_engine.qa_deleted'));
@@ -102,6 +144,15 @@ class SeoEngineQaPagesController extends Controller
             'related_rent_links' => ['nullable', 'string'],
         ]);
 
+        return $this->normalizeValidated($validated);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function normalizeValidated(array $validated): array
+    {
         $slug = trim((string) ($validated['slug'] ?? ''));
         if ($slug === '') {
             $slug = Str::slug(Str::limit($validated['question'], 80, ''));
@@ -142,5 +193,11 @@ class SeoEngineQaPagesController extends Controller
             }
             $i++;
         }
+    }
+
+    private function bustQaCache(string $category, string $slug): void
+    {
+        Cache::forget('seo_engine:api:qa:' . $category . ':' . $slug);
+        Cache::forget('seo_engine:api:qa_sitemap');
     }
 }
